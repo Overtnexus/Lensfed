@@ -1,26 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:lensfed/utilities/fonts.dart';
 
-class MembershipRenewalScreen extends StatefulWidget {
-  const MembershipRenewalScreen({super.key});
+class AddmemberScreen extends StatefulWidget {
+  const AddmemberScreen({super.key});
 
   @override
-  State<MembershipRenewalScreen> createState() =>
+  State<AddmemberScreen> createState() =>
       _MembershipRenewalScreenState();
 }
 
 class _MembershipRenewalScreenState
-    extends State<MembershipRenewalScreen> {
+    extends State<AddmemberScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController fullName = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController phone = TextEditingController();
-  final TextEditingController memberId = TextEditingController();
-  final TextEditingController clubName = TextEditingController();
-  final TextEditingController renewalYear = TextEditingController();
+  final TextEditingController membershipIdController = TextEditingController();
+final TextEditingController fullNameController = TextEditingController();
 
-  String? paymentMode;
+/// Address
+final TextEditingController houseNameController = TextEditingController();
+final TextEditingController placeController = TextEditingController();
+final TextEditingController postOfficeController = TextEditingController();
+final TextEditingController pinCodeController = TextEditingController();
+
+/// Office Address
+final TextEditingController companyNameController = TextEditingController();
+final TextEditingController officePlaceController = TextEditingController();
+final TextEditingController officePostOfficeController = TextEditingController();
+final TextEditingController officePinCodeController = TextEditingController();
+
+/// Contact Details
+final TextEditingController contactNoController = TextEditingController();
+final TextEditingController whatsappNoController = TextEditingController();
+final TextEditingController emailController = TextEditingController();
+
+/// Personal Details
+final TextEditingController qualificationController = TextEditingController();
+final TextEditingController dobController = TextEditingController();
+final TextEditingController ageController = TextEditingController();
+final TextEditingController bloodGroupController = TextEditingController();
+final TextEditingController districtController = TextEditingController();
+final TextEditingController areaController = TextEditingController();
+final TextEditingController unitController = TextEditingController();
+
+/// License Details
+final TextEditingController licenceCategoryController = TextEditingController();
+final TextEditingController licenceNoController = TextEditingController();
+final TextEditingController licenceExpiryController = TextEditingController();
+final TextEditingController welfareNoController = TextEditingController();
+final TextEditingController roleController = TextEditingController();
+
+  String? DistrictMode;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +62,7 @@ class _MembershipRenewalScreenState
         toolbarHeight: 70,
         backgroundColor: Color(0xff4f46e5),
         leading: IconButton(onPressed: (){Navigator.pop(context);}, icon: Icon(Icons.arrow_back,color: Colors.white,)),
-        title: Center(child: Text("MEMBERSHIP RENIEW",style: getFonts(18, Colors.white),)),
+        title: Center(child: Text("MEMBER",style: getFonts(18, Colors.white),)),
         shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
        bottom: Radius.circular(30),
@@ -82,52 +111,81 @@ class _MembershipRenewalScreenState
                   const SizedBox(height: 20),
 
                   const Text(
-                    "Membership Renewal",
+                    "Members",
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    "Fill in the details below to renew your membership",
+                    "Fill in the details below",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
 
                   const SizedBox(height: 30),
 
-                  buildTextField("Full Name", fullName),
-                  buildTextField("Email Address", email,
-                      keyboard: TextInputType.emailAddress),
-                  buildTextField("Phone Number", phone,
-                      keyboard: TextInputType.phone),
-                  buildTextField("Member ID", memberId),
-                  buildTextField("Club Name", clubName),
-                  buildTextField("Renewal Year", renewalYear,
-                      keyboard: TextInputType.number),
+                 buildTextField("Membership ID", membershipIdController),
+buildTextField("Full Name", fullNameController),
 
+SizedBox(height: 5),
+Text("Address Details", style: getFonts(15, Colors.black)),
+
+buildTextField("House Name", houseNameController),
+buildTextField("Place", placeController),
+buildTextField("Post Office", postOfficeController),
+buildTextField("Pin code", pinCodeController),
+
+SizedBox(height: 5),
+Text("Office Address (Optional)", style: getFonts(15, Colors.black)),
+
+buildTextField("Company Name", companyNameController),
+buildTextField("Place", officePlaceController),
+buildTextField("Post Office", officePostOfficeController),
+buildTextField("Pin code", officePinCodeController),
+
+
+SizedBox(height: 5),
+
+buildTextField("Contact No", contactNoController),
+buildTextField("Whatsapp No", whatsappNoController),
+buildTextField("Email ID", emailController),
+
+buildTextField("Qualification (Technical)", qualificationController),
+buildTextField("Date of Birth", dobController),
+buildTextField("Age", ageController),
+buildTextField("Blood Group", bloodGroupController),
+buildTextField("District", districtController),
+buildTextField("Area", areaController),
+buildTextField("Unit", unitController),
+
+buildTextField("Licence Category", licenceCategoryController),
+buildTextField("Licence No", licenceNoController),
+buildTextField("Licence Expiry Date", licenceExpiryController),
+buildTextField("Welfare No", welfareNoController),
+buildTextField("Role", roleController),
                   const SizedBox(height: 16),
 
                   // 🔽 Dropdown
                   DropdownButtonFormField<String>(
-                    decoration: inputDecoration("Payment Mode"),
-                    value: paymentMode,
+                    decoration: inputDecoration("District"),
+                    value: DistrictMode,
                     items: const [
                       DropdownMenuItem(
-                          value: "Online",
-                          child: Text("Online")),
+                          value: "Trissur",
+                          child: Text("Trissur")),
                       DropdownMenuItem(
-                          value: "Offline",
-                          child: Text("Offline")),
+                          value: "Malappuram",
+                          child: Text("Malappuram")),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        paymentMode = value;
+                        DistrictMode = value;
                       });
                     },
                     validator: (value) =>
                         value == null
-                            ? "Select payment mode"
+                            ? "Select District"
                             : null,
                   ),
 
@@ -170,9 +228,10 @@ class _MembershipRenewalScreenState
                         ),
                         child: const Center(
                           child: Text(
-                            "Submit Renewal",
+                            "Submit",
                             style: TextStyle(
                                 fontSize: 16,
+                                color: Colors.white,
                                 fontWeight:
                                     FontWeight.w600),
                           ),

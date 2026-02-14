@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:lensfed/utilities/fonts.dart';
 
-class MembershipRenewalScreen extends StatefulWidget {
-  const MembershipRenewalScreen({super.key});
+class UnitScreen extends StatefulWidget {
+  const UnitScreen({super.key});
 
   @override
-  State<MembershipRenewalScreen> createState() =>
+  State<UnitScreen> createState() =>
       _MembershipRenewalScreenState();
 }
 
 class _MembershipRenewalScreenState
-    extends State<MembershipRenewalScreen> {
+    extends State<UnitScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController fullName = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController phone = TextEditingController();
-  final TextEditingController memberId = TextEditingController();
-  final TextEditingController clubName = TextEditingController();
-  final TextEditingController renewalYear = TextEditingController();
+  final TextEditingController _unitNamecontroller = TextEditingController();
+  final TextEditingController _Areacontroller = TextEditingController();
+  final TextEditingController _Districtcontroller = TextEditingController();
 
-  String? paymentMode;
+  String? DistrictMode;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +30,7 @@ class _MembershipRenewalScreenState
         toolbarHeight: 70,
         backgroundColor: Color(0xff4f46e5),
         leading: IconButton(onPressed: (){Navigator.pop(context);}, icon: Icon(Icons.arrow_back,color: Colors.white,)),
-        title: Center(child: Text("MEMBERSHIP RENIEW",style: getFonts(18, Colors.white),)),
+        title: Center(child: Text("UNITS",style: getFonts(18, Colors.white),)),
         shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
        bottom: Radius.circular(30),
@@ -82,52 +79,46 @@ class _MembershipRenewalScreenState
                   const SizedBox(height: 20),
 
                   const Text(
-                    "Membership Renewal",
+                    "Unit",
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    "Fill in the details below to renew your membership",
+                    "Fill in the details below to add your Units",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
 
                   const SizedBox(height: 30),
 
-                  buildTextField("Full Name", fullName),
-                  buildTextField("Email Address", email,
-                      keyboard: TextInputType.emailAddress),
-                  buildTextField("Phone Number", phone,
-                      keyboard: TextInputType.phone),
-                  buildTextField("Member ID", memberId),
-                  buildTextField("Club Name", clubName),
-                  buildTextField("Renewal Year", renewalYear,
+                  buildTextField("Unit Name", _unitNamecontroller),
+                  buildTextField("Area", _Areacontroller,
                       keyboard: TextInputType.number),
 
                   const SizedBox(height: 16),
 
                   // 🔽 Dropdown
                   DropdownButtonFormField<String>(
-                    decoration: inputDecoration("Payment Mode"),
-                    value: paymentMode,
+                    decoration: inputDecoration("District"),
+                    value: DistrictMode,
                     items: const [
                       DropdownMenuItem(
-                          value: "Online",
-                          child: Text("Online")),
+                          value: "Trissur",
+                          child: Text("Trissur")),
                       DropdownMenuItem(
-                          value: "Offline",
-                          child: Text("Offline")),
+                          value: "Malappuram",
+                          child: Text("Malappuram")),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        paymentMode = value;
+                        DistrictMode = value;
                       });
                     },
                     validator: (value) =>
                         value == null
-                            ? "Select payment mode"
+                            ? "Select District"
                             : null,
                   ),
 
@@ -170,9 +161,10 @@ class _MembershipRenewalScreenState
                         ),
                         child: const Center(
                           child: Text(
-                            "Submit Renewal",
+                            "Submit",
                             style: TextStyle(
                                 fontSize: 16,
+                                color: Colors.white,
                                 fontWeight:
                                     FontWeight.w600),
                           ),

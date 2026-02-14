@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lensfed/Views/Screens/Addmember.dart';
 import 'package:lensfed/Views/Screens/Meetings.dart';
-import 'package:lensfed/utilities/colors.dart';
-import 'package:lensfed/utilities/fonts.dart';
+import 'package:lensfed/Views/Screens/Membership.dart';
+import 'package:lensfed/Views/Screens/checkinOut.dart';
+import 'package:lensfed/Views/Screens/payments.dart';
+import 'package:lensfed/Views/Screens/units.dart';
+
+class ModuleItem {
+  final String title;
+  final String desc;
+  final IconData icon;
+
+  ModuleItem({
+    required this.title,
+    required this.desc,
+    required this.icon,
+  });
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,214 +26,390 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
- late TabController _tabController;
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
- Widget _buildTabContent(List<String> names) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    final gridItemWidth = screenWidth * 0.4;
-    final gridItemHeight = screenHeight * 0.2;
-
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: screenHeight * 0.01,horizontal: screenHeight*0.02),
-      child: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          mainAxisSpacing: screenHeight * 0.02,
-          crossAxisSpacing: screenWidth * 0.03,
-          crossAxisCount: 2,
-          childAspectRatio: gridItemWidth / gridItemHeight,
-        ),
-        itemCount: names.length,
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () {
-              if (names[index] == "Exit") {
-                exit();
-              } else {
-                switch (names[index]) {
-                  case "Ledger":
-                    Navigator.push(
-                        context, MaterialPageRoute(builder: (_) => MeetingsScreen()));
-                    break;
-                //   case "Payment":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => PaymentForm()));
-                //     break;
-                //   case "Receipt":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => Reciept()));
-                //     break;
-                //   case "Sales":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => SalesOrder()));
-                //     break;
-                //   case "Ledger Report":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => LedgerReport()));
-                //     break;
-                //   case "Payment Report":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => Paymentreport()));
-                //     break;
-                //   case "Receipt Report":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => Recieptreport()));
-                //     break;
-                //   case "Sales Report":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => SalesReport()));
-                //     break;
-                //   case "Stock Report":
-                //     Navigator.push(
-                //         context, MaterialPageRoute(builder: (_) => StockReport()));
-                //     break;
-                }
-              }
-            },
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.01,
-                  vertical: screenHeight * 0.01),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(screenWidth * 0.02),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Appcolors().searchTextcolor,
-                      blurRadius: 2.0,
-                      spreadRadius: 0.0,
-                      offset: const Offset(0.0, 0.0),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Center(
-                      child: Container(
-                        height: gridItemHeight * 0.5,
-                        width: gridItemWidth * 0.5,
-                        // child: Image.asset(
-                        //   images[index],
-                        //   scale: 1.0,
-                        // ),
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.01),
-                    Text(
-                      names[index],
-                      style: getFonts(screenWidth * 0.04, Colors.black),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+  @override
+  void initState() {
+    _tabController = TabController(length: 2, vsync: this);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final tab1Names = ["Ledger", "Exit"];
-    final tab2Names = ["Payment", "Receipt", "Sales", "Exit"];
-    final tab3Names = [
-      "Ledger Report",
-      "Payment Report",
-      "Receipt Report",
-      "Sales Report",
-      "Stock Report",
-      "Exit"
-    ];
+final formsTab = [
+  ModuleItem(
+      title: "Add Members",
+      desc: "Create & update Members",
+      icon: Icons.person),
+      ModuleItem(
+      title: "Membership",
+      desc: "Manage members",
+      icon: Icons.people),
+      ModuleItem(
+      title: "Units",
+      desc: "Area configarations",
+      icon: Icons.area_chart),
+  ModuleItem(
+      title: "Meetings Schedule",
+      desc: "Schedule & track meetings",
+      icon: Icons.calendar_today),
+      ModuleItem(
+      title: "Meetings Minutes",
+      desc: "Time & track meetings",
+      icon: Icons.timelapse),
+      ModuleItem(
+      title: "Check In / Check Out",
+      desc: "Meeting Times & track meetings",
+      icon: Icons.timeline_sharp),
+  
+  ModuleItem(
+      title: "Payments",
+      desc: "Fees & transactions",
+      icon: Icons.payment),
+      ModuleItem(
+      title: "Notifications",
+      desc: "Remind",
+      icon: Icons.notification_add),
+  ModuleItem(
+      title: "Exit",
+      desc: "Close application",
+      icon: Icons.exit_to_app),
+];
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+final reportTab = [
+  ModuleItem(
+      title: "Meetings Report",
+      desc: "Schedule & track meetings",
+      icon: Icons.calendar_today),
+  ModuleItem(
+      title: "Membership Report",
+      desc: "Manage members",
+      icon: Icons.people),
+  ModuleItem(
+      title: "Payments Report",
+      desc: "Fees & transactions",
+      icon: Icons.payment),
+  ModuleItem(
+      title: "Exit",
+      desc: "Close application",
+      icon: Icons.exit_to_app),
+];
 
-    final gridItemWidth = screenWidth * 0.4;
-    final gridItemHeight = screenHeight * 0.2;
+    final width = MediaQuery.of(context).size.width;
+
+    int gridCount = 2;
+    if (width > 1000) {
+      gridCount = 4;
+    } else if (width > 600) {
+      gridCount = 3;
+    }
+
     return Scaffold(
-      backgroundColor: Appcolors().scafoldcolor,
-      appBar: AppBar(
-        toolbarHeight: MediaQuery.of(context).size.height * 0.1,
-        backgroundColor: Appcolors().maincolor,
-        leading: Text(''),
-        title: Center(
-          child: Padding(
-            padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.02),
-            child: Text(
-              "Sheracc ERP Offline",
-              style: appbarFonts(MediaQuery.of(context).size.width * 0.04, Colors.white),
-            ),
-          ),
-        ),
-      ),
       body: Column(
         children: [
-          TabBar(
-            controller: _tabController,
-            labelColor: Appcolors().maincolor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Appcolors().maincolor,
-            tabs: const [
-              Tab(text: "Master"),
-              Tab(text: "Entry"),
-              Tab(text: "Reports"),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xff6a11cb), Color(0xff2575fc)],
+              ),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTabContent(tab1Names),
-                _buildTabContent(tab2Names),
-                _buildTabContent(tab3Names),
+                const Text(
+                  "Welcome back, John Doe! 👋",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  "Manage your federation effortlessly. Access forms, track reports, and stay updated — all in one place.",
+                  style: TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 5),
+                GridView.count(
+                  crossAxisCount: gridCount,
+                  shrinkWrap: true,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 8,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 1.5,
+                  children: [
+                    _statCard("8", "Upcoming Meetings"),
+                    _statCard("23", "Notifications"),
+                  ],
+                ),
               ],
             ),
+          ),
+          const SizedBox(height: 16),
+
+          /// 🔷 Tab Content
+          Expanded(
+            child: _buildTabContent(formsTab),
           ),
         ],
       ),
     );
-
   }
-  void exit() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Appcolors().scafoldcolor,
-          content: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              'Are you confirm To Exit App?',
-              style: getFonts(14, Colors.black),
-            ),
+
+  /// 🔹 Stats Card
+  Widget _statCard(String value, String label) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+Widget _buildTabContent(List<ModuleItem> modules) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+
+  final gridItemWidth = screenWidth * 0.4;
+  final gridItemHeight = screenHeight * 0.25;
+
+  return Padding(
+    padding: EdgeInsets.symmetric(
+      vertical: screenHeight * 0.01,
+      horizontal: screenWidth * 0.04,
+    ),
+    child: GridView.builder(
+      itemCount: modules.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: screenWidth > 900
+            ? 4
+            : screenWidth > 600
+                ? 3
+                : 2,
+        mainAxisSpacing: screenHeight * 0.02,
+        crossAxisSpacing: screenWidth * 0.03,
+        childAspectRatio: gridItemWidth / gridItemHeight,
+      ),
+      itemBuilder: (context, index) {
+        final module = modules[index];
+
+        return GestureDetector(
+          onTap: () {
+            switch (module.title) {
+
+              case "Add Members":
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AddmemberScreen(),
+                  ),
+                );
+                break;
+
+              case "Membership":
+                 Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MembershipRenewalScreen(),
+                  ),
+                );
+                break;
+                case "Units":
+                 Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const UnitScreen(),
+                  ),
+                );
+                break;
+                case "Meetings Schedule":
+                 Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MeetingsScreen(),
+                  ),
+                );
+                break;
+                case "Meetings Minutes":
+                // Navigator.push(...);
+                break;
+                case "Check In / Check Out":
+                 Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CheckinOutScreen(),
+                  ),
+                );
+                break;
+                case "Payments":
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PaymentScreen(),
+                  ),
+                );
+                break;
+                case "Notifications":
+                // Navigator.push(...);
+                break;
+
+              case "Exit":
+                _exitApp();
+                break;
+
+            }
+          },
+          child: _moduleCard(
+            module.icon,
+            module.title,
+            module.desc,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: getFonts(15, Appcolors().maincolor),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                SystemNavigator.pop();
-              },
-              child: Text(
-                'Yes',
-                style: getFonts(15, Appcolors().maincolor),
-              ),
-            ),
-          ],
         );
       },
+    ),
+  );
+}
+
+Widget _buildReportTabContent(List<ModuleItem> modules) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+
+  final gridItemWidth = screenWidth * 0.4;
+  final gridItemHeight = screenHeight * 0.25;
+
+  return Padding(
+    padding: EdgeInsets.symmetric(
+      vertical: screenHeight * 0.01,
+      horizontal: screenWidth * 0.04,
+    ),
+    child: GridView.builder(
+      itemCount: modules.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: screenWidth > 900
+            ? 4
+            : screenWidth > 600
+                ? 3
+                : 2,
+        mainAxisSpacing: screenHeight * 0.02,
+        crossAxisSpacing: screenWidth * 0.03,
+        childAspectRatio: gridItemWidth / gridItemHeight,
+      ),
+      itemBuilder: (context, index) {
+        final module = modules[index];
+
+        return GestureDetector(
+          onTap: () {
+            switch (module.title) {
+
+              case "Meetings Repot":
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MembershipRenewalScreen(),
+                  ),
+                );
+                break;
+
+              case "Payments Report":
+                // Navigator.push(...);
+                break;
+
+              case "Membership Report":
+                // Navigator.push(...);
+                break;
+
+              case "Exit":
+                _exitApp();
+                break;
+
+            }
+          },
+          child: _moduleCard(
+            module.icon,
+            module.title,
+            module.desc,
+          ),
+        );
+      },
+    ),
+  );
+}
+
+  Widget _moduleCard(IconData icon, String title, String desc) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.deepPurple.shade100,
+              child: Icon(icon, color: Colors.deepPurple),
+            ),
+            const SizedBox(height: 16),
+            Text(title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 6),
+            Text(desc,
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _reportTile(String title, String subtitle) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(
+        leading: const Icon(Icons.bar_chart, color: Colors.deepPurple),
+        title: Text(title),
+        subtitle: Text(subtitle),
+      ),
+    );
+  }
+
+   void _exitApp() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Exit App"),
+        content: const Text("Are you sure you want to exit?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => SystemNavigator.pop(),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
     );
   }
 }

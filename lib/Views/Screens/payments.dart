@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:lensfed/utilities/fonts.dart';
 
-class MembershipRenewalScreen extends StatefulWidget {
-  const MembershipRenewalScreen({super.key});
+class PaymentScreen extends StatefulWidget {
+  const PaymentScreen({super.key});
 
   @override
-  State<MembershipRenewalScreen> createState() =>
+  State<PaymentScreen> createState() =>
       _MembershipRenewalScreenState();
 }
 
 class _MembershipRenewalScreenState
-    extends State<MembershipRenewalScreen> {
+    extends State<PaymentScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController fullName = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController phone = TextEditingController();
-  final TextEditingController memberId = TextEditingController();
-  final TextEditingController clubName = TextEditingController();
-  final TextEditingController renewalYear = TextEditingController();
+  final TextEditingController _paymentdatecontroller = TextEditingController();
+  final TextEditingController _Amountcontroller = TextEditingController();
+  final TextEditingController _namecontroller = TextEditingController();
+  final TextEditingController _paymentmethodcontroller = TextEditingController();
+  final TextEditingController _paymentstatuscontroller = TextEditingController();
+  final TextEditingController _remarkscontroller = TextEditingController();
+  final TextEditingController _createdbycontroller = TextEditingController();
 
-  String? paymentMode;
+  String? DistrictMode;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +34,7 @@ class _MembershipRenewalScreenState
         toolbarHeight: 70,
         backgroundColor: Color(0xff4f46e5),
         leading: IconButton(onPressed: (){Navigator.pop(context);}, icon: Icon(Icons.arrow_back,color: Colors.white,)),
-        title: Center(child: Text("MEMBERSHIP RENIEW",style: getFonts(18, Colors.white),)),
+        title: Center(child: Text("PAYMENT INCOME",style: getFonts(18, Colors.white),)),
         shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
        bottom: Radius.circular(30),
@@ -82,55 +83,69 @@ class _MembershipRenewalScreenState
                   const SizedBox(height: 20),
 
                   const Text(
-                    "Membership Renewal",
+                    "Payment",
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    "Fill in the details below to renew your membership",
+                    "Fill in the details below to add your Payments",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
 
                   const SizedBox(height: 30),
 
-                  buildTextField("Full Name", fullName),
-                  buildTextField("Email Address", email,
-                      keyboard: TextInputType.emailAddress),
-                  buildTextField("Phone Number", phone,
-                      keyboard: TextInputType.phone),
-                  buildTextField("Member ID", memberId),
-                  buildTextField("Club Name", clubName),
-                  buildTextField("Renewal Year", renewalYear,
-                      keyboard: TextInputType.number),
-
-                  const SizedBox(height: 16),
-
-                  // 🔽 Dropdown
+                  buildTextField("Unit Name", _paymentdatecontroller),
                   DropdownButtonFormField<String>(
-                    decoration: inputDecoration("Payment Mode"),
-                    value: paymentMode,
+                    decoration: inputDecoration("Reciept/Payment"),
+                    value: DistrictMode,
                     items: const [
                       DropdownMenuItem(
-                          value: "Online",
-                          child: Text("Online")),
+                          value: "Reciept",
+                          child: Text("Reciept")),
                       DropdownMenuItem(
-                          value: "Offline",
-                          child: Text("Offline")),
+                          value: "Payment",
+                          child: Text("Payment")),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        paymentMode = value;
+                        DistrictMode = value;
                       });
                     },
                     validator: (value) =>
                         value == null
-                            ? "Select payment mode"
+                            ? "Select Reciept/Payment"
                             : null,
                   ),
-
+                  buildTextField("Amount", _Amountcontroller,
+                      keyboard: TextInputType.number),
+                   buildTextField("Name", _namecontroller),
+                   buildTextField("Payment Method", _paymentmethodcontroller),   
+                  DropdownButtonFormField<String>(
+                    decoration: inputDecoration("Payment Status"),
+                    value: DistrictMode,
+                    items: const [
+                      DropdownMenuItem(
+                          value: "Pending",
+                          child: Text("Pending")),
+                      DropdownMenuItem(
+                          value: "Processed",
+                          child: Text("Processed")),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        DistrictMode = value;
+                      });
+                    },
+                    validator: (value) =>
+                        value == null
+                            ? "Select Payment Status"
+                            : null,
+                  ),
+                 buildTextField("Remarks", _remarkscontroller),
+                 buildTextField("Created By", _createdbycontroller),
                   const SizedBox(height: 24),
 
                   // 🔵 Submit Button
@@ -151,7 +166,7 @@ class _MembershipRenewalScreenState
                               .showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  "Renewal Submitted Successfully"),
+                                  "Submitted Successfully"),
                             ),
                           );
                         }
@@ -170,9 +185,10 @@ class _MembershipRenewalScreenState
                         ),
                         child: const Center(
                           child: Text(
-                            "Submit Renewal",
+                            "Submit",
                             style: TextStyle(
                                 fontSize: 16,
+                                color: Colors.white,
                                 fontWeight:
                                     FontWeight.w600),
                           ),

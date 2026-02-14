@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lensfed/Views/HomeScreen.dart';
 import 'package:lensfed/Views/Screens/Meetings.dart';
 import 'package:lensfed/Views/Screens/Membership.dart';
 import 'package:lensfed/Views/Splash.dart';
@@ -12,7 +13,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MembershipsScreen(),
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
     );
   }
 }

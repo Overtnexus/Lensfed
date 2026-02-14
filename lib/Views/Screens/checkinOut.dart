@@ -1,27 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:lensfed/utilities/fonts.dart';
 
-class MembershipRenewalScreen extends StatefulWidget {
-  const MembershipRenewalScreen({super.key});
+class CheckinOutScreen extends StatefulWidget {
+  const CheckinOutScreen({super.key});
 
   @override
-  State<MembershipRenewalScreen> createState() =>
+  State<CheckinOutScreen> createState() =>
       _MembershipRenewalScreenState();
 }
 
 class _MembershipRenewalScreenState
-    extends State<MembershipRenewalScreen> {
+    extends State<CheckinOutScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController fullName = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController phone = TextEditingController();
-  final TextEditingController memberId = TextEditingController();
-  final TextEditingController clubName = TextEditingController();
-  final TextEditingController renewalYear = TextEditingController();
+  final TextEditingController _meetingschedulecontroller = TextEditingController();
+  final TextEditingController _checkindate = TextEditingController();
+  final TextEditingController _chechintimecontroller = TextEditingController();
+  final TextEditingController _membernamecontroller = TextEditingController();
+  final TextEditingController _notescontroller = TextEditingController();
 
-  String? paymentMode;
+  String? DistrictMode;
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
 
+    if (picked != null && picked != DateTime.now()) {
+      setState(() {
+        _checkindate.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+  @override
+  void initState() {
+    _checkindate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -33,7 +51,7 @@ class _MembershipRenewalScreenState
         toolbarHeight: 70,
         backgroundColor: Color(0xff4f46e5),
         leading: IconButton(onPressed: (){Navigator.pop(context);}, icon: Icon(Icons.arrow_back,color: Colors.white,)),
-        title: Center(child: Text("MEMBERSHIP RENIEW",style: getFonts(18, Colors.white),)),
+        title: Center(child: Text("CHECK IN/OUT",style: getFonts(18, Colors.white),)),
         shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
        bottom: Radius.circular(30),
@@ -82,55 +100,64 @@ class _MembershipRenewalScreenState
                   const SizedBox(height: 20),
 
                   const Text(
-                    "Membership Renewal",
+                    "CheckIn/Out",
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    "Fill in the details below to renew your membership",
+                    "Fill in the details below to add your CheckIn/Out",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
 
                   const SizedBox(height: 30),
 
-                  buildTextField("Full Name", fullName),
-                  buildTextField("Email Address", email,
-                      keyboard: TextInputType.emailAddress),
-                  buildTextField("Phone Number", phone,
-                      keyboard: TextInputType.phone),
-                  buildTextField("Member ID", memberId),
-                  buildTextField("Club Name", clubName),
-                  buildTextField("Renewal Year", renewalYear,
-                      keyboard: TextInputType.number),
-
+                  buildTextField("Meeting Schedule", _meetingschedulecontroller),
+                  buildTextField("Checkin Date", _checkindate,),
+        //           Container(
+        //   padding: EdgeInsets.symmetric(vertical: 3),
+        //          height: screenHeight * 0.042, 
+        //       width: screenWidth * 0.42,
+        //                             decoration: BoxDecoration(
+        //                                border: Border.all(color: Appcolors().searchTextcolor),
+        //                               borderRadius: BorderRadius.circular(5),
+        //                             ),
+        //                             child:  TextField(
+        //                               style: getFontsinput(14, Colors.black),
+        //    readOnly: true,
+        //   controller: _dateController,
+        //    decoration: InputDecoration(
+        //         border: InputBorder.none,
+        //         contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+        //       ),
+        // ),
+        //                           ),
+                  buildTextField("Checkin Time", _chechintimecontroller),
                   const SizedBox(height: 16),
-
-                  // 🔽 Dropdown
                   DropdownButtonFormField<String>(
-                    decoration: inputDecoration("Payment Mode"),
-                    value: paymentMode,
+                    decoration: inputDecoration("Select Member"),
+                    value: DistrictMode,
                     items: const [
                       DropdownMenuItem(
-                          value: "Online",
-                          child: Text("Online")),
+                          value: "john",
+                          child: Text("john")),
                       DropdownMenuItem(
-                          value: "Offline",
-                          child: Text("Offline")),
+                          value: "kuriyan",
+                          child: Text("kuriyan")),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        paymentMode = value;
+                        DistrictMode = value;
                       });
                     },
                     validator: (value) =>
                         value == null
-                            ? "Select payment mode"
+                            ? "Select District"
                             : null,
                   ),
-
+                   buildTextField("Notes", _notescontroller),
                   const SizedBox(height: 24),
 
                   // 🔵 Submit Button
@@ -170,9 +197,10 @@ class _MembershipRenewalScreenState
                         ),
                         child: const Center(
                           child: Text(
-                            "Submit Renewal",
+                            "Submit",
                             style: TextStyle(
                                 fontSize: 16,
+                                color: Colors.white,
                                 fontWeight:
                                     FontWeight.w600),
                           ),
