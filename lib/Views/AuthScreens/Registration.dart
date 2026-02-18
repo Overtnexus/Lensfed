@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lensfed/Provider/AuthProvider.dart';
 import 'package:lensfed/Views/AuthScreens/Login.dart';
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -41,128 +43,199 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final width = size.width;
-    final isMobile = width < 600;
-    final isTablet = width >= 600 && width < 1000;
-    final isDesktop = width >= 1000;
-    final horizontalPadding = isMobile ? 20.0 : 40.0;
-    final cardWidth = isMobile
-        ? double.infinity
-        : isTablet
-            ? 500.0
-            : 650.0;
+@override
+Widget build(BuildContext context) {
+  final authProvider = Provider.of<AuthProvider>(context);
+  final size = MediaQuery.of(context).size;
+  final width = size.width;
+  final height = size.height;
 
-    final titleSize = isMobile ? 20.0 : 24.0;
+  final isMobile = width < 600;
 
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF6C63FF), Color(0xFF4A47A3)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+  return Scaffold(
+    body: Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF6C63FF), Color(0xFF4A47A3)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Container(
-              width: cardWidth,
-              child: Card(
-                elevation: 12,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+      ),
+      child: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: width * 0.06,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: width * 0.9,
+            ),
+            child: Card(
+              elevation: width * 0.03,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(width * 0.04),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(width * 0.06),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+
+                      /// Logo
+                      Container(
+                        height: width * 0.15,
+                        width: width * 0.15,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF6C63FF),
+                              Color(0xFF4A47A3)
+                            ],
+                          ),
+                          borderRadius:
+                              BorderRadius.circular(
+                                  width * 0.04),
+                        ),
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: width * 0.07,
+                        ),
+                      ),
+
+                      SizedBox(height: height * 0.02),
+
+                      Text(
+                        "Create Account",
+                        style: TextStyle(
+                          fontSize: width * 0.055,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      SizedBox(height: height * 0.008),
+
+                      Text(
+                        "Join the LensFed community",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: width * 0.035,
+                        ),
+                      ),
+
+                      SizedBox(height: height * 0.04),
+
+                      /// Responsive Layout
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth >
+                              width * 0.7) {
+                            return _buildTwoColumnLayout(context);
+                          } else {
+                            return _buildSingleColumnLayout();
+                          }
+                        },
+                      ),
+
+                      SizedBox(height: height * 0.03),
+
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _agreed,
+                            onChanged: (value) {
+                              setState(() {
+                                _agreed = value ?? false;
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: Text(
+                              "I agree to the Terms & Conditions and Privacy Policy",
+                              style: TextStyle(
+                                  fontSize:
+                                      width * 0.032),
+                            ),
+                          )
+                        ],
+                      ),
+
+                      SizedBox(height: height * 0.03),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: height * 0.065,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color(0xFF6C63FF),
+                            shape:
+                                RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      width * 0.03),
+                            ),
+                          ),
+                          onPressed: authProvider.isLoading
+      ? null
+      : () async {
+          if (_formKey.currentState!.validate()) {
+
+            if (_passwordController.text != _confirmPasswordController.text) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Passwords do not match"),
                 ),
-                child: Padding(
-                  padding: EdgeInsets.all(isMobile ? 20 : 30),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          height: isMobile ? 60 : 70,
-                          width: isMobile ? 60 : 70,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF6C63FF), Color(0xFF4A47A3)],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt,
+              );
+              return;
+            }
+
+            bool success = await authProvider.register(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+              fullName: _nameController.text.trim(),
+              phone: _phoneController.text.trim(),
+              role: _role
+            );
+
+            if (!context.mounted) return;
+
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Account created successfully"),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>LoginScreen()));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      authProvider.errorMessage ?? "Registration failed"),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+                          child: authProvider.isLoading?CircularProgressIndicator(
                             color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-
-                        Text(
-                          "Create Account",
-                          style: TextStyle(
-                            fontSize: titleSize,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          "Join the LensFed community",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 25),
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            if (constraints.maxWidth > 600) {
-                              return _buildTwoColumnLayout();
-                            } else {
-                              return _buildSingleColumnLayout();
-                            }
-                          },
-                        ),
-
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _agreed,
-                              onChanged: (value) {
-                                setState(() {
-                                  _agreed = value!;
-                                });
-                              },
-                            ),
-                            const Expanded(
-                              child: Text(
-                                "I agree to the Terms & Conditions and Privacy Policy",
-                                style: TextStyle(fontSize: 13),
-                              ),
-                            )
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6C63FF),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: _register,
-                            child: const Text(
-                              "Create Account",
-                              style: TextStyle(fontSize: 16),
+                          )
+                          : Text(
+                            "Create Account",
+                            style: TextStyle(
+                              fontSize: width * 0.04,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -170,22 +243,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
   Widget _buildSingleColumnLayout() {
     return Column(
       children: _formFields(),
     );
   }
-  Widget _buildTwoColumnLayout() {
-    return Wrap(
-      spacing: 20,
-      runSpacing: 20,
-      children: _formFields()
-          .map((field) => SizedBox(width: 280, child: field))
-          .toList(),
-    );
-  }
+Widget _buildTwoColumnLayout(BuildContext context) {
+  final width = MediaQuery.of(context).size.width;
+
+  return Wrap(
+    spacing: width * 0.04,     
+    runSpacing: width * 0.04,    
+    children: _formFields()
+        .map(
+          (field) => SizedBox(
+            width: width * 0.4,   
+            child: field,
+          ),
+        )
+        .toList(),
+  );
+}
   List<Widget> _formFields() {
     return [
       TextFormField(
@@ -197,7 +278,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         validator: (v) => v!.isEmpty ? "Name is required" : null,
       ),
-      SizedBox(height: 5,),
+      SizedBox(
+  height: MediaQuery.of(context).size.height * 0.006,
+),
       TextFormField(
         controller: _emailController,
         decoration: const InputDecoration(
@@ -211,7 +294,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           return null;
         },
       ),
-      SizedBox(height: 5,),
+      SizedBox(
+  height: MediaQuery.of(context).size.height * 0.006,
+),
       TextFormField(
         controller: _phoneController,
         decoration: const InputDecoration(
@@ -221,7 +306,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         validator: (v) => v!.isEmpty ? "Phone required" : null,
       ),
-      SizedBox(height: 5,),
+      SizedBox(
+  height: MediaQuery.of(context).size.height * 0.006,
+),
       DropdownButtonFormField<String>(
         value: _role.isEmpty ? null : _role,
         decoration: const InputDecoration(
@@ -237,7 +324,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         onChanged: (v) => setState(() => _role = v!),
         validator: (v) => v == null ? "Select role" : null,
       ),
-      SizedBox(height: 5,),
+     SizedBox(
+  height: MediaQuery.of(context).size.height * 0.006,
+),
       TextFormField(
         controller: _passwordController,
         obscureText: _obscurePassword,

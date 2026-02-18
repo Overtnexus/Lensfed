@@ -22,7 +22,7 @@ TextStyle filedFonts (){
 TextStyle splashFonts(double fontSize) {
   return GoogleFonts.hahmlet(
     fontWeight: FontWeight.w700,
-    fontSize: fontSize, // Adjust font size dynamically
+    fontSize: fontSize,
     color: Colors.white,
   );
 }
@@ -30,7 +30,7 @@ TextStyle splashFonts(double fontSize) {
 TextStyle splash2Fonts(double fontSize) {
   return GoogleFonts.poppins(
     fontWeight: FontWeight.w400,
-    fontSize: fontSize, // Adjust font size dynamically
+    fontSize: fontSize, 
     color: Colors.white,
   );
 }
@@ -42,7 +42,7 @@ TextStyle drewerFonts (){
 TextStyle splash3Fonts(double fontSize) {
   return GoogleFonts.hahmlet(
     fontWeight: FontWeight.w700,
-    fontSize: fontSize, // Adjust font size dynamically
+    fontSize: fontSize, 
     color: Colors.black,
   );
 }
