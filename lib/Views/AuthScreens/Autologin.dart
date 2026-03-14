@@ -11,7 +11,7 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
-    if (authProvider.userData!= null) {
+    if (authProvider.user!= null) {
       return const HomeScreen();
     } else {
       return const LesnsfedSplash();

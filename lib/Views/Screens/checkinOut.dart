@@ -1,7 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:lensfed/Modals/checkinOut_modal.dart';
+import 'package:lensfed/Modals/meetings_modal.dart';
+import 'package:lensfed/Modals/member_modal.dart';
+import 'package:lensfed/Provider/AuthProvider.dart';
+import 'package:lensfed/Provider/checkinOut_provider.dart';
+import 'package:lensfed/Provider/meeting_provider.dart';
+import 'package:lensfed/Provider/member_provider.dart';
+import 'package:lensfed/utilities/colors.dart';
 import 'package:lensfed/utilities/fonts.dart';
+import 'package:provider/provider.dart';
 
 class CheckinOutScreen extends StatefulWidget {
   const CheckinOutScreen({super.key});
@@ -61,14 +71,19 @@ Future<void> _selectTime(BuildContext context) async {
     });
   }
 }
-
+ final formKey = GlobalKey<FormState>();
   @override
   void initState() {
     _checkindate.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
     _chechintimecontroller.text =DateFormat('HH:mm:ss').format(DateTime.now());
+      Future.microtask(() =>
+        Provider.of<MemberProvider>(context, listen: false)
+            .fetchMembers());
+            Future.microtask(() =>
+        Provider.of<MeetingProvider>(context, listen: false)
+            .fetchMeeting());
     super.initState();
   }
-  @override
 @override
 Widget build(BuildContext context) {
   final size = MediaQuery.of(context).size;
@@ -76,9 +91,11 @@ Widget build(BuildContext context) {
   final height = size.height;
 
   final isTablet = width > 600;
+   final provider =
+            Provider.of<CheckinOutProvider>(context);
 
   return Scaffold(
-    backgroundColor: const Color(0xffeef2f7),
+    backgroundColor: AppColors.backgroundLight,
     appBar: AppBar(
       toolbarHeight: height * 0.09,
       backgroundColor: const Color(0xff4f46e5),
@@ -172,8 +189,70 @@ Widget build(BuildContext context) {
 
                 SizedBox(height: height * 0.04),
 
-                buildTextField(context, "Meeting Schedule",
-                    _meetingschedulecontroller),
+                SizedBox(
+                   width: 330,
+                   child: Consumer<MeetingProvider>(
+                     builder: (context, provider, child) {
+                       return Autocomplete<MeetingModel>(
+                        
+                         displayStringForOption: (MeetingModel option) =>
+                             option.meetingName ?? "",
+                          optionsViewBuilder: (context, onSelected, options) {
+  return Align(
+    alignment: Alignment.topLeft,
+    child: Material(
+      color: Colors.grey.shade200, 
+      child: SizedBox(
+        width: 330,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: options.length,
+          itemBuilder: (context, index) {
+            final member = options.elementAt(index);
+            return ListTile(
+              title: Text(member.meetingName ?? ""),
+              onTap: () => onSelected(member),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+},
+                         optionsBuilder: (TextEditingValue textEditingValue) {
+                           if (textEditingValue.text.isEmpty) {
+                             return provider.meeting;
+                           }
+                           return provider.meeting.where((MeetingModel member) {
+                             return (member.meetingName ?? "")
+                                 .toLowerCase()
+                                 .contains(textEditingValue.text.toLowerCase());
+                           });
+                         },
+                 
+                         onSelected: (MeetingModel selection) {
+                           _meetingschedulecontroller.text = selection.meetingName ?? "";
+                         },
+                 
+                         fieldViewBuilder:
+                             (context, textEditingController, focusNode, onEditingComplete) {
+                           textEditingController.text = _meetingschedulecontroller.text;
+                 
+                           return TextFormField(
+                             controller: textEditingController,
+                             focusNode: focusNode,
+                             decoration: inputDecoration(context,"Meeting Name"),
+                             validator: (value) =>
+                                 value == null || value.isEmpty
+                                     ? "Required"
+                                     : null,
+                           );
+                         },
+                       );
+                     },
+                   ),
+                 ),
+                  SizedBox(height: height * 0.02),
                 buildTextField(
                     context, "Checkin Date", _checkindate),
                 buildTextField(context, "Checkin Time",
@@ -181,26 +260,69 @@ Widget build(BuildContext context) {
 
                 SizedBox(height: height * 0.001),
 
-                DropdownButtonFormField<String>(
-                  decoration:
-                      inputDecoration(context, "Select Member"),
-                  value: DistrictMode,
-                  items: const [
-                    DropdownMenuItem(
-                        value: "john",
-                        child: Text("john")),
-                    DropdownMenuItem(
-                        value: "kuriyan",
-                        child: Text("kuriyan")),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      DistrictMode = value;
-                    });
-                  },
-                  validator: (value) =>
-                      value == null ? "Select District" : null,
-                ),
+                 SizedBox(
+                   width: 330,
+                   child: Consumer<MemberProvider>(
+                     builder: (context, provider, child) {
+                       return Autocomplete<MembersModal>(
+                        
+                         displayStringForOption: (MembersModal option) =>
+                             option.fullName ?? "",
+                          optionsViewBuilder: (context, onSelected, options) {
+  return Align(
+    alignment: Alignment.topLeft,
+    child: Material(
+      color: Colors.grey.shade200, 
+      child: SizedBox(
+        width: 330,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: options.length,
+          itemBuilder: (context, index) {
+            final member = options.elementAt(index);
+            return ListTile(
+              title: Text(member.fullName ?? ""),
+              onTap: () => onSelected(member),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+},
+                         optionsBuilder: (TextEditingValue textEditingValue) {
+                           if (textEditingValue.text.isEmpty) {
+                             return provider.members;
+                           }
+                           return provider.members.where((MembersModal member) {
+                             return (member.fullName ?? "")
+                                 .toLowerCase()
+                                 .contains(textEditingValue.text.toLowerCase());
+                           });
+                         },
+                 
+                         onSelected: (MembersModal selection) {
+                           _membernamecontroller.text = selection.fullName ?? "";
+                         },
+                 
+                         fieldViewBuilder:
+                             (context, textEditingController, focusNode, onEditingComplete) {
+                           textEditingController.text = _membernamecontroller.text;
+                 
+                           return TextFormField(
+                             controller: textEditingController,
+                             focusNode: focusNode,
+                             decoration: inputDecoration(context,"Member Name"),
+                             validator: (value) =>
+                                 value == null || value.isEmpty
+                                     ? "Required"
+                                     : null,
+                           );
+                         },
+                       );
+                     },
+                   ),
+                 ),
 
                 SizedBox(height: height * 0.017),
 
@@ -221,39 +343,42 @@ Widget build(BuildContext context) {
                       ),
                       padding: EdgeInsets.zero,
                     ),
-                    onPressed: () async{
-                      if(_formKey.currentState!.validate()){
-                        try{
-                          await FirebaseFirestore.instance.collection("checkinOut").add({
-                            "meeting_schedule":_meetingschedulecontroller.text.trim(),
-                            "checkin_date":_checkindate.text.trim(),
-                            "checkin_time":_chechintimecontroller.text.trim(),
-                            "member":_membernamecontroller.text.trim(),
-                            "notes":_notescontroller.text.trim(),
-                            "created_at":TimeOfDay.now(),
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Added Successfully"))
-                          );
-   
-                          _meetingschedulecontroller.clear();
-                          _membernamecontroller.clear();
-                          _notescontroller.clear();
-                        }catch (e){
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("error :$e"))
-                          );
-                        }
-                      }
-                    },
-                    child: Ink(
+                   onPressed: provider.isLoading
+    ? null
+    : () async {
+        if (_formKey.currentState!.validate()) {
+
+          final checkin = CheckinoutModal(
+            meetingSchedule: _meetingschedulecontroller.text,
+            checkinDate: _checkindate.text,
+            checkinTime: _chechintimecontroller.text,
+            member: DistrictMode ?? "",
+            notes: _notescontroller.text,
+            createdBY: "Member",
+          );
+
+          await provider.addCheckinout(checkin);
+
+          Fluttertoast.showToast(msg: "Added Successfully");
+
+          setState(() {
+            _meetingschedulecontroller.clear();
+            _checkindate.text =
+                DateFormat('dd-MM-yyyy').format(DateTime.now());
+            _chechintimecontroller.text =
+                DateFormat('HH:mm:ss').format(DateTime.now());
+            _notescontroller.clear();
+            DistrictMode = null;
+          });
+
+          Navigator.pop(context);
+        }
+      },
+                    child: provider.isLoading ?
+                    CircularProgressIndicator(color: Colors.white,)
+                    : Ink(
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xff4f46e5),
-                            Color(0xff6366f1),
-                          ],
-                        ),
+                        gradient: AppColors.gradientPrimary,
                         borderRadius: BorderRadius.all(
                           Radius.circular(width * 0.03),
                         ),
@@ -329,6 +454,45 @@ Widget build(BuildContext context) {
     contentPadding: EdgeInsets.symmetric(
       horizontal: screenWidth * 0.04,
       vertical: screenWidth * 0.035,
+    ),
+  );
+}
+  InputDecoration inputDecoration2(String label, [String? hint, IconData? icon]) {
+    double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.height;
+  return InputDecoration(
+    labelText: label,
+    hintText: hint,
+    prefixIcon: icon != null ? Icon(icon, color: Colors.grey.shade600) : null,
+
+    filled: true,
+    fillColor: Colors.grey.shade100,
+
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 18,
+    ),
+
+    labelStyle: formFonts(h * 0.025, Colors.grey),
+
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        width: h * 0.002,
+        color: Colors.grey.shade400,
+      ),
+    ),
+
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: Color(0xFF7C3AED),
+        width: 1.8,
+      ),
+    ),
+
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
     ),
   );
 }

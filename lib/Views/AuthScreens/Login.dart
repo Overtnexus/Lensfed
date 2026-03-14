@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
 import 'package:lensfed/Views/AuthScreens/Registration.dart';
+import 'package:lensfed/Views/AuthScreens/forgotPass_otp.dart';
+import 'package:lensfed/Views/AuthScreens/forgotpassSCcreen.dart';
+import 'package:lensfed/Views/AuthScreens/otp_verifyScreen.dart';
 import 'package:lensfed/Views/HomeScreen.dart';
+import 'package:lensfed/utilities/colors.dart';
+import 'package:lensfed/utilities/fonts.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  final TextEditingController _MemberidController = TextEditingController();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -111,23 +117,34 @@ Widget build(BuildContext context) {
 
                       /// Email
                       TextFormField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: "Email",
-                          prefixIcon: Icon(Icons.email),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Email is required";
-                          }
-                          if (!RegExp(r'\S+@\S+\.\S+')
-                              .hasMatch(value)) {
-                            return "Invalid email";
-                          }
-                          return null;
-                        },
-                      ),
+  controller: _emailController,
+  decoration: const InputDecoration(
+    labelText: "Member ID",
+    prefixIcon: Icon(Icons.person),
+    border: OutlineInputBorder(),
+  ),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return "Member ID is required";
+    }
+    return null;
+  },
+),
+ SizedBox(height: height * 0.025),
+                TextFormField(
+  controller: _MemberidController,
+  decoration: const InputDecoration(
+    labelText: "Email",
+    prefixIcon: Icon(Icons.person),
+    border: OutlineInputBorder(),
+  ),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return "Member ID is required";
+    }
+    return null;
+  },
+),
 
                       SizedBox(height: height * 0.025),
 
@@ -187,86 +204,105 @@ Widget build(BuildContext context) {
                                 },
                               ),
                               Text(
-                                "Remember me",
+                                "Remember Me",
                                 style: TextStyle(
                                     fontSize:
                                         width * 0.035),
                               ),
                             ],
                           ),
-                          TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              "Forgot password?",
-                              style: TextStyle(
-                                  fontSize:
-                                      width * 0.035),
-                            ),
-                          ),
+                         TextButton(
+  onPressed: () {
+
+    if (_MemberidController.text.trim().isEmpty) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter Email first"),
+        ),
+      );
+
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ForgotOtpVerificationScreen(
+          memberId: _MemberidController.text,
+          email: _emailController.text,
+        ),
+      ),
+    );
+
+  },
+  child: Text(
+    "Forgot password?",
+    style: TextStyle(fontSize: width * 0.035),
+  ),
+),
                         ],
                       ),
 
                       SizedBox(height: height * 0.02),
+                      GestureDetector(
+                        onTap: authProvider.isLoading
+        ? null
+        : () async {
+            if (_formKey.currentState!.validate()) {
 
-                      /// Sign In Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: height * 0.065,
-                        child: ElevatedButton(
-                          style:
-                              ElevatedButton.styleFrom(
-                            shape:
-                                RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      width * 0.03),
-                            ),
-                            backgroundColor:
-                                const Color(
-                                    0xFF6C63FF),
-                          ),
-                          onPressed: authProvider.isLoading
-      ? null
-      : () async {
-
-          if (_formKey.currentState!.validate()) {
-
-            bool success = await authProvider.login(
-              _emailController.text.trim(),
-              _passwordController.text.trim(),
-            );
-
-            if (!context.mounted) return;
-
-            if (success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Login successful"),
-                  backgroundColor: Colors.green,
-                ),
+              bool success = await authProvider.login(
+                _emailController.text.trim(), 
+                _passwordController.text.trim(),
               );
-              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomeScreen()));
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      authProvider.errorMessage ?? "Login failed"),
-                  backgroundColor: Colors.red,
-                ),
-              );
+
+              if (!context.mounted) return;
+
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Login Successful"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => OtpVerificationScreen(
+                      memberId: _emailController.text,
+                      email: _MemberidController.text,
+                    ),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Invalid Member ID or Password"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             }
-          }
-        },
-                          child:authProvider.isLoading?const CircularProgressIndicator(color: Colors.white)
-                           :Text(
-                            "Sign In",
-                            style: TextStyle(
-                              fontSize:
-                                  width * 0.04,
-                            ),
-                          ),
-                        ),
+          },
+                        child:  Container(
+                      height: height * 0.06,
+                      width: width * 0.6,              
+                      decoration: BoxDecoration(
+                        gradient: AppColors.gradientPrimary,
+                        borderRadius: BorderRadius.circular(height * 0.02),
                       ),
+              
+                      child: Center(  
+                        child:authProvider.isLoading?const CircularProgressIndicator(color: Colors.white)
+                           : Text(
+                "Sign IN",
+                style: getFonts(16, AppColors.accentLight),
+              ),
+              
+                      ),
+                    ),
+                       ),
 
                       SizedBox(height: height * 0.03),
 

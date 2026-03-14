@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:lensfed/Views/AuthScreens/Login.dart';
 import 'package:lensfed/Views/AuthScreens/Registration.dart';
@@ -12,10 +13,36 @@ class LesnsfedSplash extends StatefulWidget {
 }
 
 class _LesnsfedSplashState extends State<LesnsfedSplash> {
+  Future<void> requestNotificationPermission() async {
+
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  print("Notification Permission: ${settings.authorizationStatus}");
+
+}
+
+Future<void> getToken() async {
+
+  String? token = await FirebaseMessaging.instance.getToken();
+
+  print("FCM Token: $token");
+
+}
+
+
 
   @override
   void initState() {
     super.initState();
+
+     requestNotificationPermission();
+  getToken();
     Future.delayed(const Duration(seconds: 4), () {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => LoginScreen()));
