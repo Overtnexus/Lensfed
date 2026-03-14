@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "55323849279",
+    "project_id": "lensfed-ed934",
+    "storage_bucket": "lensfed-ed934.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:55323849279:android:6bd9d65549a263ede1fe8a",
+        "android_client_info": {
+          "package_name": "com.example.lensfed"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATKRJCOTi2AyIz8HjR0zoYtpApi82PECw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
