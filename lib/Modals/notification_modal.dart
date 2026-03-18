@@ -25,25 +25,24 @@ class NotificationModel {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
 
-    String? createTime;
-    String? sendTime;
+    String? createDate;
+    String? sendDate;
 
-    // convert Firestore Timestamp to String
     if (json["createDateTime"] != null) {
       if (json["createDateTime"] is Timestamp) {
-        createTime =
+        createDate =
             (json["createDateTime"] as Timestamp).toDate().toString();
       } else {
-        createTime = json["createDateTime"].toString();
+        createDate = json["createDateTime"].toString();
       }
     }
 
     if (json["sendDateTime"] != null) {
       if (json["sendDateTime"] is Timestamp) {
-        sendTime =
+        sendDate =
             (json["sendDateTime"] as Timestamp).toDate().toString();
       } else {
-        sendTime = json["sendDateTime"].toString();
+        sendDate = json["sendDateTime"].toString();
       }
     }
 
@@ -52,8 +51,8 @@ class NotificationModel {
       title: json["title"],
       message: json["message"],
       role: json["role"],
-      createDateTime: createTime,
-      sendDateTime: sendTime,
+      createDateTime: createDate,
+      sendDateTime: sendDate,
       attachment: json["attachment"],
       createdBY: json["createdBY"],
       isSent: json["isSent"] ?? false,

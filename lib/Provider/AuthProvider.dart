@@ -128,6 +128,27 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<void> loadUserFromPrefs() async {
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  bool isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+
+  if (isLoggedIn) {
+
+    _membershipId = prefs.getString("memberId");
+
+    _user = {
+      "fullName": prefs.getString("fullName"),
+      "email": prefs.getString("email"),
+      "role": prefs.getString("role"),
+      "memberId": prefs.getString("memberId"),
+    };
+
+    notifyListeners();
+  }
+}
+
 Future<bool> updatePassword({
   required String memberId,
   required String password,
@@ -270,6 +291,18 @@ Future<bool> sendOtp_forgot({
     _membershipId = null;
     notifyListeners();
   }
+
+  Future<void> logout2() async {
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  await prefs.clear();
+
+  _user = null;
+  _membershipId = null;
+
+  notifyListeners();
+}
 
   /// ================= CHECK LOGIN =================
   bool get isLoggedIn => _user != null;

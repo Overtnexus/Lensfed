@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:lensfed/Provider/notication_provider.dart';
 import 'package:lensfed/utilities/colors.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +7,31 @@ import 'package:provider/provider.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
+String formatFirestoreDate(String? raw) {
+  if (raw == null || raw.isEmpty) return "";
 
+  try {
+    // CASE 1: Normal ISO string
+    if (raw.contains("-")) {
+      DateTime dt = DateTime.parse(raw);
+      return DateFormat("dd MMM, hh:mm a").format(dt);
+    }
+
+    // CASE 2: Firestore {_seconds: ...}
+    final secondsMatch = RegExp(r'_seconds:\s*(\d+)').firstMatch(raw);
+
+    if (secondsMatch != null) {
+      final seconds = int.parse(secondsMatch.group(1)!);
+      DateTime dt =
+          DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+      return DateFormat("dd MMM, hh:mm a").format(dt);
+    }
+
+    return raw;
+  } catch (e) {
+    return raw;
+  }
+}
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -145,7 +170,7 @@ class NotificationScreen extends StatelessWidget {
                             const SizedBox(width: 4),
 
                             Text(
-                              notification.createDateTime ?? "",
+                              formatFirestoreDate(notification.createDateTime ?? ""),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade500,

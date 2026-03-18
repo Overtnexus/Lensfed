@@ -352,9 +352,9 @@ Widget build(BuildContext context) {
             meetingSchedule: _meetingschedulecontroller.text,
             checkinDate: _checkindate.text,
             checkinTime: _chechintimecontroller.text,
-            member: DistrictMode ?? "",
+            member: _membernamecontroller.text,
             notes: _notescontroller.text,
-            createdBY: "Member",
+            createdBY: "member",
           );
 
           await provider.addCheckinout(checkin);

@@ -26,286 +26,194 @@ class _MeetingScreenState extends State<MeetingScreen> {
   }
 
   @override
-Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
 
-  final provider = Provider.of<MeetingProvider>(context);
+    final provider = Provider.of<MeetingProvider>(context);
 
-  final width = MediaQuery.of(context).size.width;
-  final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
 
-  if (provider.isLoading) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
-  }
-
-  if (provider.meeting.isEmpty) {
-    return const Scaffold(
-      body: Center(child: Text("No Meetings")),
-    );
-  }
-
-  DateTime today = DateTime.now();
-
-  /// FIND NEXT MEETING
-  List<MeetingModel> upcomingMeetings = [];
-
-  for (var meeting in provider.meeting) {
-
-    DateTime meetingDate =
-        DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
-
-    if (meetingDate.isAfter(today) ||
-        meetingDate.isAtSameMomentAs(today)) {
-      upcomingMeetings.add(meeting);
+    if (provider.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
-  }
-  upcomingMeetings.sort((a, b) {
-    DateTime aDate =
-        DateFormat("dd-MM-yyyy").parse(a.meetingDate ?? "");
-    DateTime bDate =
-        DateFormat("dd-MM-yyyy").parse(b.meetingDate ?? "");
-    return aDate.compareTo(bDate);
-  });
 
-  /// NEXT MEETING
-  MeetingModel? nextMeeting =
-      upcomingMeetings.isNotEmpty ? upcomingMeetings.first : null;
+    if (provider.meeting.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text("No Meetings")),
+      );
+    }
 
-  /// FILTER MEETINGS FOR TABS
-  List<MeetingModel> filteredMeetings = [];
+    DateTime today = DateTime.now();
 
-  for (var meeting in provider.meeting) {
+    /// ✅ COUNT CALCULATION
+    int upcomingCount = 0;
+    int pastCount = 0;
 
-    DateTime meetingDate =
-        DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
+    for (var meeting in provider.meeting) {
+      DateTime meetingDate =
+          DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
 
-    if (selectedTab == 0) {
-
-      /// Upcoming
       if (meetingDate.isAfter(today) ||
           meetingDate.isAtSameMomentAs(today)) {
-        filteredMeetings.add(meeting);
+        upcomingCount++;
+      } else {
+        pastCount++;
       }
-
-    } else if (selectedTab == 1) {
-
-      /// Past
-      if (meetingDate.isBefore(today)) {
-        filteredMeetings.add(meeting);
-      }
-
-    } else {
-
-      /// All
-      filteredMeetings.add(meeting);
     }
-  }
 
-  return Scaffold(
-    backgroundColor: AppColors.backgroundLight,
-    appBar: AppBar(
-      toolbarHeight: height * 0.09,
-      backgroundColor: const Color(0xff4f46e5),
-      leading: IconButton(
-        onPressed: () => Navigator.pop(context),
-        icon: Icon(
-          Icons.arrow_back,
-          color: Colors.white,
-          size: width * 0.06,
+    int allCount = provider.meeting.length;
+
+    /// ✅ AUTO FIX TAB
+    if (upcomingCount == 0 && selectedTab == 0) {
+      selectedTab = 2;
+    }
+
+    /// NEXT MEETING
+    List<MeetingModel> upcomingMeetings = [];
+
+    for (var meeting in provider.meeting) {
+      DateTime meetingDate =
+          DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
+
+      if (meetingDate.isAfter(today) ||
+          meetingDate.isAtSameMomentAs(today)) {
+        upcomingMeetings.add(meeting);
+      }
+    }
+
+    upcomingMeetings.sort((a, b) {
+      DateTime aDate =
+          DateFormat("dd-MM-yyyy").parse(a.meetingDate ?? "");
+      DateTime bDate =
+          DateFormat("dd-MM-yyyy").parse(b.meetingDate ?? "");
+      return aDate.compareTo(bDate);
+    });
+
+    MeetingModel? nextMeeting =
+        upcomingMeetings.isNotEmpty ? upcomingMeetings.first : null;
+
+    /// ✅ FILTER LOGIC
+    List<MeetingModel> filteredMeetings = [];
+
+    for (var meeting in provider.meeting) {
+
+      DateTime meetingDate =
+          DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
+
+      if (selectedTab == 0 && upcomingCount > 0) {
+
+        if (meetingDate.isAfter(today) ||
+            meetingDate.isAtSameMomentAs(today)) {
+          filteredMeetings.add(meeting);
+        }
+
+      } else if (selectedTab == 1 && pastCount > 0) {
+
+        if (meetingDate.isBefore(today)) {
+          filteredMeetings.add(meeting);
+        }
+
+      } else {
+
+        filteredMeetings.add(meeting);
+      }
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
+      appBar: AppBar(
+        toolbarHeight: height * 0.09,
+        backgroundColor: const Color(0xff4f46e5),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: width * 0.06,
+          ),
+        ),
+        title: Text(
+          "MEETINGS",
+          style: TextStyle(
+            fontSize: width * 0.045,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(width * 0.08),
+          ),
         ),
       ),
-      title: Text(
-        "MEETINGS",
-        style: TextStyle(
-          fontSize: width * 0.045,
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      centerTitle: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(width * 0.08),
-        ),
-      ),
-      elevation: 3,
-    ),
 
-    body: SingleChildScrollView(
-      padding: EdgeInsets.all(width * .04),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(width * .04),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
+            /// NEXT MEETING CARD
+            if (nextMeeting != null)
+              meetingCard(nextMeeting, width),
 
-          /// NEXT MEETING CARD
-          if (nextMeeting != null)
-            nextMeetingCard(nextMeeting, width),
+            SizedBox(height: height * .03),
 
-          SizedBox(height: height * .03),
+            /// TABS
+            tabBar(width, upcomingCount, pastCount, allCount),
 
-          /// TABS
-          tabBar(width, provider.meeting.length),
+            SizedBox(height: height * .02),
 
-          SizedBox(height: height * .02),
-
-          /// MEETING LIST
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: filteredMeetings.length,
-            itemBuilder: (context, index) {
-
-              final meeting = filteredMeetings[index];
-
-              return meetingCard(meeting, width);
-            },
-          )
-        ],
-      ),
-    ),
-  );
-}
-
-  /// NEXT MEETING CARD
-  Widget nextMeetingCard(MeetingModel meeting, double width) {
-
-    DateTime date = DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(width * .04),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(width*0.03),
-        boxShadow: const [
-          BoxShadow(
-            blurRadius: 10,
-            color: Colors.black12,
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-
-              Row(
-                children: [
-                  Icon(Icons.star_border,
-                      color: Colors.deepPurple,
-                      size: width * .045),
-
-                  SizedBox(width: width * .02),
-
-                  Text(
-                    "NEXT MEETING",
-                    style: TextStyle(
-                      color: Colors.deepPurple,
-                      fontSize: width * .03,
-                      fontWeight: FontWeight.w600,
+            /// LIST
+            filteredMeetings.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(width * 0.05),
+                      child: Text(
+                        "No meetings found",
+                        style: TextStyle(
+                          fontSize: width * 0.04,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-
-              Chip(
-                label: Text(
-                  meeting.meetingType ?? "",
-                  style: TextStyle(fontSize: width * .03),
-                ),
-                backgroundColor: Colors.deepPurple.shade50,
-              )
-            ],
-          ),
-          Divider(color: AppColors.primaryLight,),
-          SizedBox(height: width * .01),
-
-          Text(
-            meeting.meetingName ?? "",
-            style: TextStyle(
-              fontSize: width * .055,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          SizedBox(height: width * .02),
-
-          Wrap(
-            spacing: width * .04,
-            runSpacing: width * .03,
-            children: [
-
-              info(Icons.calendar_today,
-                  "${date.day} ${month(date.month)} ${date.year}", width),
-
-              info(Icons.access_time,
-                  meeting.meetingTime ?? "", width),
-
-              info(Icons.location_on,
-                  meeting.meetingLocation ?? "", width),
-
-              info(Icons.people,
-                  meeting.meetingAttendees ?? "0", width),
-            ],
-          ),
-
-          SizedBox(height: width * .02),
-
-          Text(
-            "Agenda",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: width * .04,
-            ),
-          ),
-
-          SizedBox(height: width * .02),
-
-          Text(
-            meeting.meetingAgenda ?? "",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: width * .035,
-            ),
-          ),
-        ],
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredMeetings.length,
+                    itemBuilder: (context, index) {
+                      final meeting = filteredMeetings[index];
+                      return meetingCard(meeting, width);
+                    },
+                  )
+          ],
+        ),
       ),
     );
   }
-
-  /// INFO WIDGET
-  Widget info(IconData icon, String text, double width) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: width * .04, color: Colors.deepPurple),
-        SizedBox(width: width * .01),
-        Text(text, style: TextStyle(fontSize: width * .033))
-      ],
-    );
-  }
-
-  
 
   /// TAB BAR
-  Widget tabBar(double width, int count) {
+  Widget tabBar(double width, int upcoming, int past, int all) {
     return Row(
       children: [
 
-        tabButton("Upcoming", 0, width, count),
+        if (upcoming > 0)
+          tabButton("Upcoming", 0, width, upcoming),
 
-        SizedBox(width: width * .02),
+        if (upcoming > 0)
+          SizedBox(width: width * .02),
 
-        tabButton("Past", 1, width, count),
+        if (past > 0)
+          tabButton("Past", 1, width, past),
 
-        SizedBox(width: width * .02),
+        if (past > 0)
+          SizedBox(width: width * .02),
 
-        tabButton("All", 2, width, count),
+        tabButton("All", 2, width, all),
       ],
     );
   }
@@ -347,6 +255,8 @@ Widget build(BuildContext context) {
       ),
     );
   }
+
+  /// KEEP YOUR EXISTING UI METHODS BELOW (UNCHANGED)
 
   /// MEETING CARD
   Widget meetingCard(MeetingModel meeting, double width) {

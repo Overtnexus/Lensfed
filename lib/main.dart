@@ -12,26 +12,39 @@ import 'package:lensfed/Provider/notication_provider.dart';
 import 'package:lensfed/Views/Splash.dart';
 
 
-/// BACKGROUND NOTIFICATION HANDLER
+/// ✅ BACKGROUND HANDLER
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print("Background Notification: ${message.notification?.title}");
+  debugPrint("🔔 Background Notification: ${message.notification?.title}");
 }
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
 
+  /// Background notifications
   FirebaseMessaging.onBackgroundMessage(
     _firebaseMessagingBackgroundHandler,
   );
 
-  runApp(const MyApp());
+  /// ✅ MOVE PROVIDER HERE (IMPORTANT FIX)
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => MemberProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => MeetingProvider()),
+        ChangeNotifierProvider(create: (_) => CheckinOutProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 
+/// ✅ MAIN APP
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -46,46 +59,49 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _initFCM();
+
+    /// Delay to ensure context is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initFCM();
+    });
   }
 
 
-  /// INITIALIZE FCM
+  /// ✅ FCM INITIALIZATION
   Future<void> _initFCM() async {
 
-    /// Request permission (Android 13+)
+    /// Request permission (Android 13+ / iOS)
     await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    /// Get device token
+    /// Get token
     String? token = await _messaging.getToken();
+    debugPrint("📱 FCM TOKEN: $token");
 
-    print("FCM TOKEN: $token");
-
-    /// Send token to provider
+    /// Save token
     if (token != null) {
       context.read<NotificationProvider>().saveDeviceToken(token);
     }
 
-    /// FOREGROUND NOTIFICATION
+    /// 🔔 FOREGROUND
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
 
-      print("Foreground Notification: ${message.notification?.title}");
+      debugPrint("🔔 Foreground Notification: ${message.notification?.title}");
 
-      context.read<NotificationProvider>().addNotificationFromPush(message);
-
+      context.read<NotificationProvider>()
+          .addNotificationFromPush(message);
     });
 
-    /// CLICK NOTIFICATION
+    /// 📲 CLICK ACTION
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
 
-      print("Notification Clicked");
+      debugPrint("👉 Notification Clicked");
 
-      context.read<NotificationProvider>().openNotification(message);
-
+      context.read<NotificationProvider>()
+          .openNotification(message);
     });
   }
 
@@ -93,21 +109,13 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
 
-    return MultiProvider(
-      providers: [
-
-        ChangeNotifierProvider(create: (_) => MemberProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => MeetingProvider()),
-        ChangeNotifierProvider(create: (_) => CheckinOutProvider()),
-        ChangeNotifierProvider(create: (_) => NotificationProvider()),
-
-      ],
-
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: const LesnsfedSplash(),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "LensFed",
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
       ),
+      home: const LesnsfedSplash(),
     );
   }
 }

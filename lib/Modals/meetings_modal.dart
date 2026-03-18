@@ -18,6 +18,7 @@ class MeetingModel {
   final String? meetingStatus;
   final String? meetingAgenda;
   final String? meetingReminder;
+  final String? createdBy;
 
   MeetingModel({
     this.id,
@@ -36,48 +37,81 @@ class MeetingModel {
     this.meetingStatus,
     this.meetingAgenda,
     this.meetingReminder,
+    this.createdBy,
   });
+
+  /// SAFE STRING HELPER
+  static String? _getString(dynamic value) {
+    if (value == null) return null;
+    if (value.toString().toLowerCase() == "null") return null;
+    return value.toString();
+  }
+
+  /// DATE FORMAT FIX (IMPORTANT 🔥)
+  static String? _formatDate(dynamic value) {
+    if (value == null) return null;
+
+    try {
+      DateTime date = DateTime.parse(value.toString());
+
+      /// Convert to dd-MM-yyyy (your UI format)
+      return "${date.day.toString().padLeft(2, '0')}-"
+          "${date.month.toString().padLeft(2, '0')}-"
+          "${date.year}";
+    } catch (e) {
+      /// If already formatted, return as is
+      return value.toString();
+    }
+  }
 
   /// FROM JSON
   factory MeetingModel.fromJson(Map<String, dynamic> json) {
     return MeetingModel(
-      id: json['id'],
-      meetingDate: json['meetingDate']?.toString() ,
-      meetingTime: json['meetingTime']?.toString(),
-      meetingLocation: json['meetingLocation']?.toString(),
-      addressLine1: json['addressLine1']?.toString(),
-      addressLine2: json['addressLine2']?.toString(),
-      city: json['city']?.toString(),
-      state: json['state']?.toString(),
-      postalCode: json['postalCode']?.toString(),
-      country: json['country']?.toString(),
-      meetingName: json['meetingName']?.toString(),
-      meetingAttendees: json['meetingAttendees']?.toString(),
-      meetingType: json['meetingType']?.toString(),
-      meetingStatus: json['meetingStatus']?.toString(),
-      meetingAgenda: json['meetingAgenda']?.toString(),
-      meetingReminder: json['meetingReminder']?.toString(),
+      id: _getString(json['id'] ?? json['_id']),
+
+      meetingDate: _formatDate(json['meetingDate']),
+      meetingTime: _getString(json['meetingTime']),
+      meetingLocation: _getString(json['meetingLocation']),
+
+      addressLine1: _getString(json['addressLine1']),
+      addressLine2: _getString(json['addressLine2']),
+      city: _getString(json['city']),
+      state: _getString(json['state']),
+      postalCode: _getString(json['postalCode']),
+      country: _getString(json['country']),
+
+      meetingName: _getString(json['meetingName']),
+      meetingAttendees: _getString(json['meetingAttendees']),
+      meetingType: _getString(json['meetingType']),
+      meetingStatus: _getString(json['meetingStatus']),
+      meetingAgenda: _getString(json['meetingAgenda']),
+      meetingReminder: _getString(json['meetingReminder']),
+
+      /// handle both cases
+      createdBy: _getString(json['createdBy'] ?? json['createdBY']),
     );
   }
 
   /// TO JSON
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'meetingDate': meetingDate,
-      'meetingTime': meetingTime,
-      'meetingLocation': meetingLocation,
-      'addressLine1': addressLine1,
-      'addressLine2': addressLine2,
-      'city': city,
-      'state': state,
-      'postalCode': postalCode,
-      'country': country,
-      'meetingName': meetingName,
-      'meetingAttendees': meetingAttendees,
-      'meetingType': meetingType,
-      'meetingStatus': meetingStatus,
-      'meetingAgenda': meetingAgenda,
-      'meetingReminder': meetingReminder,
+      "id": id,
+      "meetingDate": meetingDate,
+      "meetingTime": meetingTime,
+      "meetingLocation": meetingLocation,
+      "addressLine1": addressLine1,
+      "addressLine2": addressLine2,
+      "city": city,
+      "state": state,
+      "postalCode": postalCode,
+      "country": country,
+      "meetingName": meetingName,
+      "meetingAttendees": meetingAttendees,
+      "meetingType": meetingType,
+      "meetingStatus": meetingStatus,
+      "meetingAgenda": meetingAgenda,
+      "meetingReminder": meetingReminder,
+      "createdBy": createdBy,
     };
-  }}
+  }
+}

@@ -1,9 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:lensfed/Provider/AuthProvider.dart';
 import 'package:lensfed/Views/AuthScreens/Login.dart';
 import 'package:lensfed/Views/AuthScreens/Registration.dart';
 import 'package:lensfed/Views/HomeScreen.dart';
 import 'package:lensfed/utilities/fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LesnsfedSplash extends StatefulWidget {
   const LesnsfedSplash({super.key});
@@ -37,17 +40,37 @@ Future<void> getToken() async {
 
 
 
-  @override
-  void initState() {
-    super.initState();
+ @override
+void initState() {
+  super.initState();
 
-     requestNotificationPermission();
+  requestNotificationPermission();
   getToken();
-    Future.delayed(const Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
-    });
+
+  checkLogin();
+}
+Future<void> checkLogin() async {
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  bool isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+
+  if (isLoggedIn) {
+
+    /// Load user into provider
+    await Provider.of<AuthProvider>(context, listen: false)
+        .loadUserFromPrefs();
   }
+
+  await Future.delayed(const Duration(seconds: 3));
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => isLoggedIn ? HomeScreen() : LoginScreen(),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;

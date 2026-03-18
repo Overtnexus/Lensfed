@@ -5,8 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:lensfed/Modals/member_modal.dart';
 import 'package:lensfed/Modals/notification_modal.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
+import 'package:lensfed/Provider/meeting_provider.dart';
 import 'package:lensfed/Provider/member_provider.dart';
 import 'package:lensfed/Provider/notication_provider.dart';
+import 'package:lensfed/Views/AuthScreens/Login.dart';
 import 'package:lensfed/Views/Screens/Meetings.dart';
 import 'package:lensfed/Views/Screens/checkinOut.dart';
 import 'package:lensfed/Views/Screens/notificationScreen.dart';
@@ -37,15 +39,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+    late PageController _pageController;
+  int _currentPage = 0;
+bool isUserTouching = false;
 
 @override
 void initState() {
   super.initState();
+ _pageController = PageController(viewportFraction: 0.9);
+
+  startAutoScroll();
 
   Future.microtask(() {
     Provider.of<MemberProvider>(context, listen: false).fetchMembers();
   });
-
+ Future.microtask(() {
+    Provider.of<MeetingProvider>(context, listen: false).fetchMeeting();
+  });
   _tabController = TabController(length: 2, vsync: this);
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -78,7 +88,34 @@ void initState() {
 
   });
 }
-  
+void startAutoScroll() {
+  Future.delayed(const Duration(seconds: 3), () {
+
+    if (!mounted || !_pageController.hasClients) return;
+
+    if (isUserTouching) {
+      startAutoScroll(); // pause when user touching
+      return;
+    }
+
+    final provider =
+        Provider.of<MeetingProvider>(context, listen: false);
+
+    final meetings = provider.meeting.take(3).toList();
+
+    if (meetings.isEmpty) return;
+
+    _currentPage = (_currentPage + 1) % meetings.length;
+
+    _pageController.animateToPage(
+      _currentPage,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+
+    startAutoScroll();
+  });
+}
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -256,13 +293,222 @@ final loggedMember = memberProvider
 
           Text(
             "Manage your federation effortlessly. Access forms, track reports, and stay updated — all in one place.",
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: screenWidth * 0.035,
-            ),
+            style:drewerFonts()
           ),
 
-          SizedBox(height: screenWidth * 0.03), 
+          SizedBox(height: screenWidth * 0.01), 
+    Consumer<MeetingProvider>(
+  builder: (context, provider, child) {
+
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+
+    if (provider.meeting.isEmpty) {
+      return const SizedBox();
+    }
+
+    final meetings = provider.meeting.take(3).toList();
+
+    return SizedBox(
+      height: height * 0.22, // ✅ responsive height
+
+      child: GestureDetector(
+        onPanDown: (_) => isUserTouching = false,
+        onPanEnd: (_) => isUserTouching = false,
+        onPanCancel: () => isUserTouching = false,
+
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: meetings.length,
+
+          onPageChanged: (index) {
+            setState(() {
+              _currentPage = index;
+            });
+          },
+
+          itemBuilder: (context, index) {
+
+            final meeting = meetings[index];
+
+            bool isActive = index == _currentPage;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+
+              margin: EdgeInsets.symmetric(
+                horizontal: width * 0.01,
+                vertical: isActive
+                    ? height * 0.01
+                    : height * 0.02,
+              ),
+
+              transform: Matrix4.identity()
+                ..scale(isActive ? 1.0 : 0.92),
+
+              padding: EdgeInsets.all(width * 0.04),
+
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(width * 0.05),
+
+                gradient: LinearGradient(
+                  colors: isActive
+                      ? [Color(0xff4f46e5), Color(0xff6366f1)]
+                      : [
+                          Colors.grey.shade400,
+                          Colors.grey.shade500
+                        ],
+                ),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(
+                        isActive ? 0.25 : 0.1),
+                    blurRadius: isActive ? 12 : 6,
+                    offset: const Offset(0, 5),
+                  )
+                ],
+              ),
+
+              child: Row(
+                children: [
+
+                  /// DATE BOX
+                  Container(
+                    width: width * 0.18,
+                    padding: EdgeInsets.symmetric(
+                        vertical: height * 0.015),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(
+                          width * 0.04),
+                    ),
+
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          getDay(meeting.meetingDate),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: width * 0.055,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          getMonth(meeting.meetingDate),
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: width * 0.03,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(width: width * 0.03),
+
+                  /// DETAILS
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+                      children: [
+
+                        Text(
+                          meeting.meetingName ?? "",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: width * 0.04,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(height: height * 0.006),
+
+                        Row(
+                          children: [
+                            Icon(Icons.location_on,
+                                color: Colors.white70,
+                                size: width * 0.035),
+                            SizedBox(width: width * 0.01),
+                            Expanded(
+                              child: Text(
+                                meeting.meetingLocation ?? "",
+                                maxLines: 1,
+                                overflow:
+                                    TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: width * 0.032,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: height * 0.006),
+
+                        Row(
+                          children: [
+                            Icon(Icons.access_time,
+                                color: Colors.white70,
+                                size: width * 0.035),
+                            SizedBox(width: width * 0.01),
+                            Text(
+                              meeting.meetingTime ?? "",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: width * 0.032,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: height * 0.01),
+
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: width * 0.03,
+                            vertical: height * 0.004,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            meeting.meetingType ?? "",
+                            style: TextStyle(
+                              color:
+                                  const Color(0xff4f46e5),
+                              fontSize: width * 0.028,
+                              fontWeight:
+                                  FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  },
+),
 
           // GridView.count(
           //   crossAxisCount: gridCount,
@@ -287,7 +533,30 @@ final loggedMember = memberProvider
 )
     );
   }
+String getDay(String? date) {
+  if (date == null || date.isEmpty) return "--";
+  try {
+    final parts = date.split("-");
+    return parts[0];
+  } catch (e) {
+    return "--";
+  }
+}
 
+String getMonth(String? date) {
+  if (date == null || date.isEmpty) return "";
+  try {
+    final parts = date.split("-");
+    const months = [
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec"
+    ];
+    int m = int.parse(parts[1]);
+    return months[m - 1];
+  } catch (e) {
+    return "";
+  }
+}
 Widget _buildDrawer(BuildContext context, MembersModal? member) {
   return Drawer(
     child: SafeArea(
@@ -353,8 +622,8 @@ Widget _buildDrawer(BuildContext context, MembersModal? member) {
                 style: TextStyle(color: Colors.red),
               ),
               onTap: () {
-                Provider.of<AuthProvider>(context, listen: false).logout();
-                Navigator.pushReplacementNamed(context, "/login");
+                Provider.of<AuthProvider>(context, listen: false).logout2();
+                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>LoginScreen()));
               },
             ),
           ),
@@ -454,7 +723,7 @@ Widget _buildTabContent(List<ModuleItem> modules) {
 
   return Padding(
     padding: EdgeInsets.symmetric(
-      vertical: screenHeight * 0.0001,
+      
       horizontal: screenWidth * 0.04,
     ),
     child: GridView.builder(
