@@ -214,11 +214,12 @@ Widget build(BuildContext context) {
                          TextButton(
   onPressed: () {
 
-    if (_MemberidController.text.trim().isEmpty) {
+    if (_MemberidController.text.trim().isEmpty&&_emailController.text.trim().isEmpty) {
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter Email first"),
+         SnackBar(
+          backgroundColor: AppColors.accentForegroundLight,
+          content: Text("Please enter Email & MemberID first",style: getFonts(height*0.015, Colors.white),),
         ),
       );
 
@@ -260,9 +261,9 @@ Widget build(BuildContext context) {
 
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Login Successful"),
-                    backgroundColor: Colors.green,
+                   SnackBar(
+                    content: Text("Verify User",style: getFonts(height*0.015, Colors.white),),
+                    backgroundColor: AppColors.accentForegroundLight,
                   ),
                 );
 

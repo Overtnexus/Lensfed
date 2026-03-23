@@ -2,8 +2,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
 import 'package:lensfed/Views/AuthScreens/Login.dart';
-import 'package:lensfed/Views/AuthScreens/Registration.dart';
 import 'package:lensfed/Views/HomeScreen.dart';
+import 'package:lensfed/utilities/colors.dart';
 import 'package:lensfed/utilities/fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,26 +81,25 @@ Future<void> checkLogin() async {
     return Scaffold(
        body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0616BA),
-              Color(0xFF387FE9),
-            ],
-          ),
+          gradient:AppColors.gradientPrimary
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: screenHeight * 0.2),
-            // Container(
-            //   child: Image.asset(
-            //     "assets/images/launch 1.png",
-            //     height: screenHeight * 0.25, 
-            //   ),
-            // ),
+            Container(
+              height: screenHeight * 0.13,
+              width: screenHeight * 0.13,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(screenHeight*0.06),
+                color: Colors.white
+              ),
+              child: Image.asset(
+                "assets/lensfed.logo-removebg.png",
+                height: screenHeight * 0.25, 
+              ),
+            ),
             Center(
               child: Row(mainAxisAlignment: MainAxisAlignment.center,
                 children: [

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lensfed/Modals/member_modal.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
 import 'package:lensfed/Provider/member_provider.dart';
+import 'package:lensfed/utilities/colors.dart';
+import 'package:lensfed/utilities/fonts.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -84,7 +86,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-
+                         Container(
+                        height: width * 0.18,
+                        width: width * 0.18,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF6C63FF),
+                              Color(0xFF4A47A3)
+                            ],
+                          ),
+                          borderRadius:
+                              BorderRadius.circular(width * 0.05),
+                        ),
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: width * 0.09,
+                        ),
+                      ),
                         Text(
                           "Create Account",
                           style: TextStyle(
@@ -267,21 +287,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         SizedBox(height: height * 0.04),
 
                         /// REGISTER BUTTON
-                        SizedBox(
-                          width: double.infinity,
-                          height: height * 0.07,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFF6C63FF),
-                              shape:
-                                  RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(
-                                        width * 0.03),
-                              ),
-                            ),
-                           onPressed: authProvider.isLoading
+                         GestureDetector(
+                      onTap: authProvider.isLoading
         ? null
         : () async {
             if (_formKey.currentState!.validate()) {
@@ -325,19 +332,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
               }
             }
           },
-                            child: authProvider.isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white)
-                                : const Text(
-                                    "Register",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight:
-                                          FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
+                        child:  Container(
+                      height: height * 0.06,
+                      width: width * 0.6,              
+                      decoration: BoxDecoration(
+                        gradient: AppColors.gradientPrimary,
+                        borderRadius: BorderRadius.circular(height * 0.02),
+                      ),
+              
+                      child: Center(  
+                        child:authProvider.isLoading?const CircularProgressIndicator(color: Colors.white)
+                           : Text(
+                "REGISTER",
+                style: getFonts(16, AppColors.accentLight),
+              ),
+              
+                      ),
+                    ),
+                       ),
+                       
                       ],
                     ),
                   ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:custom_floating_navigation_bar/custom_floating_navigation_bar.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,11 +22,13 @@ class ModuleItem {
   final String title;
   final String desc;
   final IconData icon;
+  final Widget? screen;
 
   ModuleItem({
     required this.title,
     required this.desc,
     required this.icon,
+    this.screen
   });
 }
 
@@ -292,7 +295,7 @@ final loggedMember = memberProvider
           SizedBox(height: screenWidth * 0.015), 
 
           Text(
-            "Manage your federation effortlessly. Access forms, track reports, and stay updated — all in one place.",
+            "The Licensed Engineers and Supervisors Federation (LESF) is an organization that represents the interests of licensed engineers, technical professionals, and supervisors across various industries.",
             style:drewerFonts()
           ),
 
@@ -530,7 +533,8 @@ final loggedMember = memberProvider
       child: _buildTabContent(formsTab),
     ),
   ],
-)
+),
+
     );
   }
 String getDay(String? date) {
@@ -787,6 +791,31 @@ Widget _buildTabContent(List<ModuleItem> modules) {
   );
 }
 
+final List<ModuleItem> modules = [
+  ModuleItem(
+    icon: Icons.login,
+    title: "Check In / Check Out",
+    desc: "Mark attendance",
+    screen: const CheckinOutScreen(),
+  ),
+  ModuleItem(
+    icon: Icons.people,
+    title: "Meetings",
+    desc: "View meetings",
+    screen: const MeetingScreen(),
+  ),
+  ModuleItem(
+    icon: Icons.notifications,
+    title: "Notifications",
+    desc: "View alerts",
+    screen: const NotificationScreen(),
+  ),
+  ModuleItem(
+    icon: Icons.exit_to_app,
+    title: "Exit",
+    desc: "Close app",
+  ),
+];
 
   Widget _moduleCard(IconData icon, String title, String desc) {
     final screenWidth = MediaQuery.of(context).size.width;

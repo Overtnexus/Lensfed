@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:lensfed/Provider/notication_provider.dart';
 import 'package:lensfed/utilities/colors.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class NotificationScreen extends StatelessWidget {
@@ -75,10 +76,10 @@ String formatFirestoreDate(String? raw) {
     }
 
     if (provider.notifications.isEmpty) {
-      return const Center(
+      return  Center(
         child: Text(
           "No Notifications",
-          style: TextStyle(fontSize: 16),
+          style: TextStyle(fontSize:  width * 0.04),
         ),
       );
     }
@@ -128,8 +129,6 @@ String formatFirestoreDate(String? raw) {
                   ),
 
                   const SizedBox(width: 12),
-
-                  /// TEXT AREA
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,6 +153,45 @@ String formatFirestoreDate(String? raw) {
                             color: Colors.grey.shade700,
                           ),
                         ),
+                        const SizedBox(height: 8),
+              GestureDetector(
+  onTap: () async {
+    String url = notification.attachment ?? "";
+
+    if (url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid link")),
+      );
+      return;
+    }
+
+    // ✅ FIX: Add https if missing
+    if (!url.startsWith("http")) {
+      url = "https://$url";
+    }
+
+    final Uri uri = Uri.parse(url);
+
+    try {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Could not open link")),
+      );
+    }
+  },
+  child: Text(
+    notification.attachment ?? "",
+    style: TextStyle(
+      fontSize: 14,
+      color: Colors.blue,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+),
 
                         const SizedBox(height: 8),
 

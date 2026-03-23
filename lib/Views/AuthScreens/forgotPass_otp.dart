@@ -300,7 +300,7 @@ class _OtpVerificationScreenState extends State<ForgotOtpVerificationScreen> {
                           size: iconSize,
                           color: const Color(0xff2575fc)),
 
-                      SizedBox(height: h * .02),
+                      SizedBox(height: h * .01),
 
                       Text(
                         "Forgot Password OTP Verification",
@@ -321,7 +321,7 @@ class _OtpVerificationScreenState extends State<ForgotOtpVerificationScreen> {
                         ),
                       ),
 
-                      SizedBox(height: h * .035),
+                      SizedBox(height: h * .02),
 
                       /// OTP BOXES
                       Row(
@@ -344,7 +344,7 @@ class _OtpVerificationScreenState extends State<ForgotOtpVerificationScreen> {
                         ),
                       ],
 
-                      SizedBox(height: h * .04),
+                      SizedBox(height: h * .03),
 
                       /// SEND OTP
                       if (!otpSent)
@@ -390,7 +390,7 @@ GestureDetector(
                     ),
                        ),
 
-                        SizedBox(height: h * .02),
+                        SizedBox(height: h * .01),
 
                         resendTimer > 0
                             ? Text(
@@ -412,7 +412,7 @@ GestureDetector(
                               ),
                       ],
 
-                      SizedBox(height: h * .02),
+                      SizedBox(height: h * .01),
 
                       Divider(color: Colors.grey.shade300),
 
