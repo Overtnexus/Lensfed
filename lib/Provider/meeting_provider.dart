@@ -16,6 +16,9 @@ class MeetingProvider with ChangeNotifier {
   String? _message;
   String? get message => _message;
 
+  MeetingModel? _selectedMeeting;
+MeetingModel? get selectedMeeting => _selectedMeeting;
+
 
   Future<void> fetchMeeting() async {
     _isLoading = true;
@@ -31,4 +34,8 @@ class MeetingProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+  void setSelectedMeeting(MeetingModel meeting) {
+  _selectedMeeting = meeting;
+  notifyListeners();
+}
 }

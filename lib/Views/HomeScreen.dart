@@ -10,13 +10,16 @@ import 'package:lensfed/Provider/meeting_provider.dart';
 import 'package:lensfed/Provider/member_provider.dart';
 import 'package:lensfed/Provider/notication_provider.dart';
 import 'package:lensfed/Views/AuthScreens/Login.dart';
+import 'package:lensfed/Views/Screens/AdsScreen.dart';
 import 'package:lensfed/Views/Screens/Meetings.dart';
 import 'package:lensfed/Views/Screens/checkinOut.dart';
 import 'package:lensfed/Views/Screens/notificationScreen.dart';
+import 'package:lensfed/Views/Screens/profile.dart';
 import 'package:lensfed/utilities/colors.dart';
 
 import 'package:lensfed/utilities/fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:super_animated_navigation_bar/super_animated_navigation_bar.dart';
 
 class ModuleItem {
   final String title;
@@ -300,6 +303,7 @@ final loggedMember = memberProvider
           ),
 
           SizedBox(height: screenWidth * 0.01), 
+          
     Consumer<MeetingProvider>(
   builder: (context, provider, child) {
 
@@ -528,15 +532,210 @@ final loggedMember = memberProvider
         ],
       ),
     ),
-
-    Expanded(
-      child: _buildTabContent(formsTab),
+    SizedBox(height: H*0.008,),
+    Text("Events",style: getFonts(H*0.017, AppColors.cardDark),),
+    Container(
+      height: H*0.3,
+      decoration: BoxDecoration(
+        color: AppColors.foregroundDark,
+         border: Border.all(
+      color: Colors.white.withOpacity(0.2),
+      width: 1.5,
+    ),
+     boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.25),
+        blurRadius: 15,
+        offset: const Offset(0, 8),
+      ),
+    ],
+      ),
+      child: beautifulImageSlider(context),
     ),
   ],
 ),
+bottomNavigationBar: Container(
+  decoration: BoxDecoration(borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))),
+  child: SuperAnimatedNavBar(
+    currentIndex: _currentPage,
+  
+    indeicatorDecoration: IndeicatorDecoration(
+      indicatorType: IndicatorType.wave,
+      indeicatorColor: Colors.deepPurple.shade900,
+      glowEnable: true,
+      glowColor: Colors.white,
+      glowRadius: 24,
+      indicatorPosition: IndicatorPosition.bottom,
+      curve: Curves.easeInOutBack,
+      animateDuration: const Duration(milliseconds: 800),
+    ),
+  
+    items: [
+    NavigationBarItem(
+      selectedIcon: _navItem(Icons.home_filled, "Home", true),
+      unSelectedIcon: _navItem(Icons.home_outlined, "Home", false),
+    ),
+  
+    NavigationBarItem(
+      selectedIcon: _navItem(Icons.ad_units, "Ads", true),
+      unSelectedIcon: _navItem(Icons.ad_units, "Ads", false),
+    ),
+  
+    NavigationBarItem(
+      selectedIcon: _navItem(Icons.calendar_today, "Meetings", true),
+      unSelectedIcon: _navItem(Icons.calendar_today_outlined, "Meetings", false),
+    ),
+  
+    NavigationBarItem(
+      selectedIcon: _navItem(Icons.notifications, "Alerts", true),
+      unSelectedIcon: _navItem(Icons.notifications_none, "Alerts", false),
+    ),
+     NavigationBarItem(
+      selectedIcon: _navItem(Icons.person_3, "Profile", true),
+      unSelectedIcon: _navItem(Icons.person_3, "Profile", false),
+    ),
+  ],
+  
+    
+    onTap: (index) {
+      setState(() => _currentPage = index);
+  
+      // 🔥 NAVIGATION WITHOUT CHANGING BODY
+      switch (index) {
+        case 0:
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomeScreen()));
+  
+          break;
+  
+        case 1:
+          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>AdvertisementScreen()));
+          break;
+  
+        case 2:
+          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MeetingScreen()));
+  
+          break;
+  
+        case 3:
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>NotificationScreen()));
+  
+          break;
+          case 4:
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ProfileScreen()));
 
+          break;
+      }
+    },
+  
+    barHeight: H*0.09,
+    backgroundColor: Colors.grey.shade100,
+  ),
+),
     );
   }
+Widget beautifulImageSlider(BuildContext context) {
+  final width = MediaQuery.of(context).size.width;
+  final height = MediaQuery.of(context).size.height;
+
+  final List<String> images = [
+    "assets/checkin.png",
+    "assets/meetings.png",
+    "assets/members.png",
+  ];
+
+  final PageController controller =
+      PageController(viewportFraction: 0.9);
+
+  return StatefulBuilder(
+    builder: (context, setState) {
+      int currentPage = 0;
+
+      return Column(
+        children: [
+          SizedBox(
+            height: height * 0.25,
+            child: PageView.builder(
+              controller: controller,
+              itemCount: images.length,
+              onPageChanged: (index) {
+                setState(() => currentPage = index);
+              },
+              itemBuilder: (context, index) {
+
+                return Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: width * 0.02,
+                  ),
+
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 5),
+                      )
+                    ],
+                  ),
+
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      images[index],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+           SizedBox(height:width*0.02 ),
+
+          /// 🔥 DOT INDICATOR
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(images.length, (index) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: currentPage == index ? 14 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: currentPage == index
+                      ? Colors.deepPurple
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(width*0.02),
+                ),
+              );
+            }),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+  Widget _navItem(IconData icon, String label, bool isSelected) {
+    final W = MediaQuery.of(context).size.width;
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(
+        icon,
+        size: isSelected ? 26 : 24,
+        color: isSelected ? Colors.deepPurple.shade900 : Colors.grey,
+      ),
+       SizedBox(height: W*0.001),
+      Text(
+        label,
+        style: btmNav()
+      ),
+    ],
+  );
+}
 String getDay(String? date) {
   if (date == null || date.isEmpty) return "--";
   try {
@@ -749,12 +948,12 @@ Widget _buildTabContent(List<ModuleItem> modules) {
           onTap: () {
             switch (module.title) {
                 case "Check In / Check Out":
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CheckinOutScreen(),
-                  ),
-                );
+                //  Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (_) => const CheckinOutScreen(),
+                //   ),
+                // );
                 break;
                 case "Meetings":
                  Navigator.push(
@@ -792,12 +991,12 @@ Widget _buildTabContent(List<ModuleItem> modules) {
 }
 
 final List<ModuleItem> modules = [
-  ModuleItem(
-    icon: Icons.login,
-    title: "Check In / Check Out",
-    desc: "Mark attendance",
-    screen: const CheckinOutScreen(),
-  ),
+  // ModuleItem(
+  //   icon: Icons.login,
+  //   title: "Check In / Check Out",
+  //   desc: "Mark attendance",
+  //   screen: const CheckinOutScreen(),
+  // ),
   ModuleItem(
     icon: Icons.people,
     title: "Meetings",

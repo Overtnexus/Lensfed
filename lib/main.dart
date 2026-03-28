@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:lensfed/Provider/membershipReniew_provider.dart';
+import 'package:lensfed/Services/notification_services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:lensfed/Provider/AuthProvider.dart';
@@ -11,24 +13,27 @@ import 'package:lensfed/Provider/notication_provider.dart';
 
 import 'package:lensfed/Views/Splash.dart';
 
-
 /// ✅ BACKGROUND HANDLER
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+
   debugPrint("🔔 Background Notification: ${message.notification?.title}");
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  /// ✅ FIREBASE INIT
   await Firebase.initializeApp();
 
-  /// Background notifications
+  /// ✅ LOCAL NOTIFICATION INIT
+  await LocalNotificationService.initialize();
+
+  /// ✅ BACKGROUND NOTIFICATION
   FirebaseMessaging.onBackgroundMessage(
     _firebaseMessagingBackgroundHandler,
   );
 
-  /// ✅ MOVE PROVIDER HERE (IMPORTANT FIX)
   runApp(
     MultiProvider(
       providers: [
@@ -37,12 +42,12 @@ void main() async {
         ChangeNotifierProvider(create: (_) => MeetingProvider()),
         ChangeNotifierProvider(create: (_) => CheckinOutProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => MembershipreniewProvider()),
       ],
       child: const MyApp(),
     ),
   );
 }
-
 
 /// ✅ MAIN APP
 class MyApp extends StatefulWidget {
@@ -53,7 +58,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   @override
@@ -66,10 +70,8 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-
-  /// ✅ FCM INITIALIZATION
+  /// ✅ FCM SETUP
   Future<void> _initFCM() async {
-
     /// Request permission (Android 13+ / iOS)
     await _messaging.requestPermission(
       alert: true,
@@ -86,29 +88,32 @@ class _MyAppState extends State<MyApp> {
       context.read<NotificationProvider>().saveDeviceToken(token);
     }
 
-    /// 🔔 FOREGROUND
+    /// 🔔 FOREGROUND MESSAGE
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-
       debugPrint("🔔 Foreground Notification: ${message.notification?.title}");
 
-      context.read<NotificationProvider>()
-          .addNotificationFromPush(message);
+      /// ✅ SHOW IN MOBILE NOTIFICATION BAR
+      if (message.notification != null) {
+        LocalNotificationService.showNotification(
+          title: message.notification!.title ?? "Notification",
+          body: message.notification!.body ?? "",
+        );
+      }
+
+      /// ALSO UPDATE INSIDE APP
+      context.read<NotificationProvider>().addNotificationFromPush(message);
     });
 
-    /// 📲 CLICK ACTION
+    /// 📲 WHEN USER CLICK NOTIFICATION
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-
       debugPrint("👉 Notification Clicked");
 
-      context.read<NotificationProvider>()
-          .openNotification(message);
+      context.read<NotificationProvider>().openNotification(message);
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "LensFed",

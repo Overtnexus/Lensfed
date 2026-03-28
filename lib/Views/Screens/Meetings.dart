@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lensfed/Modals/meetings_modal.dart';
 import 'package:lensfed/Provider/meeting_provider.dart';
+import 'package:lensfed/Views/Screens/meetingsDetailscreen.dart';
 import 'package:lensfed/utilities/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -259,110 +260,119 @@ class _MeetingScreenState extends State<MeetingScreen> {
   /// KEEP YOUR EXISTING UI METHODS BELOW (UNCHANGED)
 
   /// MEETING CARD
+  
   Widget meetingCard(MeetingModel meeting, double width) {
 
-    DateTime date = DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
+  DateTime date = DateFormat("dd-MM-yyyy").parse(meeting.meetingDate ?? "");
 
-    return Container(
-      margin: EdgeInsets.only(bottom: width * .04),
-      padding: EdgeInsets.all(width * .04),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6)
-        ],
-      ),
-      child: Row(
-        children: [
+    return GestureDetector(
+      onTap: () {
+        final provider = Provider.of<MeetingProvider>(context, listen: false);
 
-          /// DATE
-          Column(
-            children: [
-              Text(
-                date.day.toString(),
-                style: TextStyle(
-                  fontSize: width * .065,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(month(date.month)),
-              Text(date.year.toString()),
-            ],
-          ),
-
-          SizedBox(width: width * .04),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  provider.setSelectedMeeting(meeting);
+        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MeetingDetailsScreen()));
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: width * .04),
+        padding: EdgeInsets.all(width * .04),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: const [
+            BoxShadow(color: Colors.black12, blurRadius: 6)
+          ],
+        ),
+        child: Row(
+          children: [
+      
+            /// DATE
+            Column(
               children: [
-
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
-                  children: [
-
-                    Expanded(
-                      child: Text(
-                        meeting.meetingName ?? "",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: width * .04,
-                        ),
-                      ),
-                    ),
-
-                    Row(
-                      children: const [
-                        Icon(Icons.circle,
-                            size: 8, color: Colors.green),
-                        SizedBox(width: 4),
-                        Text(
-                          "Scheduled",
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 12,
-                          ),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-
-                SizedBox(height: width * .02),
-
-                Wrap(
-                  spacing: width * .03,
-                  children: [
-
-                    smallInfo(Icons.access_time,
-                        meeting.meetingTime ?? "", width),
-
-                    smallInfo(Icons.location_on,
-                        meeting.meetingLocation ?? "", width),
-
-                    smallInfo(Icons.people,
-                        meeting.meetingAttendees ?? "", width),
-                  ],
-                ),
-
-                SizedBox(height: width * .02),
-
-                Chip(
-                  label: Text(
-                    meeting.meetingType ?? "",
-                    style: TextStyle(
-                      color: Colors.deepPurple,
-                      fontSize: width * .03,
-                    ),
+                Text(
+                  date.day.toString(),
+                  style: TextStyle(
+                    fontSize: width * .065,
+                    fontWeight: FontWeight.bold,
                   ),
-                  backgroundColor: Colors.deepPurple.shade50,
                 ),
+                Text(month(date.month)),
+                Text(date.year.toString()),
               ],
             ),
-          )
-        ],
+      
+            SizedBox(width: width * .04),
+      
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+      
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
+                    children: [
+      
+                      Expanded(
+                        child: Text(
+                          meeting.meetingName ?? "",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: width * .04,
+                          ),
+                        ),
+                      ),
+      
+                      Row(
+                        children: const [
+                          Icon(Icons.circle,
+                              size: 8, color: Colors.green),
+                          SizedBox(width: 4),
+                          Text(
+                            "Scheduled",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 12,
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+      
+                  SizedBox(height: width * .02),
+      
+                  Wrap(
+                    spacing: width * .03,
+                    children: [
+      
+                      smallInfo(Icons.access_time,
+                          meeting.meetingTime ?? "", width),
+      
+                      smallInfo(Icons.location_on,
+                          meeting.meetingLocation ?? "", width),
+      
+                      smallInfo(Icons.people,
+                          meeting.meetingAttendees ?? "", width),
+                    ],
+                  ),
+      
+                  SizedBox(height: width * .02),
+      
+                  Chip(
+                    label: Text(
+                      meeting.meetingType ?? "",
+                      style: TextStyle(
+                        color: Colors.deepPurple,
+                        fontSize: width * .03,
+                      ),
+                    ),
+                    backgroundColor: Colors.deepPurple.shade50,
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

@@ -39,6 +39,10 @@ TextStyle drewerFonts (){
   return GoogleFonts.poppins(fontWeight: FontWeight.w500,fontSize: 14 ,color:Color(0xFF8A8C91)
  );
 }
+TextStyle btmNav (){
+  return GoogleFonts.poppins(fontWeight: FontWeight.w500,fontSize: 10 ,color:Color(0xFF8A8C91)
+ );
+}
 TextStyle splash3Fonts(double fontSize) {
   return GoogleFonts.hahmlet(
     fontWeight: FontWeight.w700,

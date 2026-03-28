@@ -4,28 +4,29 @@ class CheckinoutModal {
   final String checkinDate;
   final String checkinTime;
   final String member;
-  final String notes;
-  final String createdBY;
+  final String? checkoutTime;
+  final String? totalHrs;
 
   CheckinoutModal({
     this.id,
-   required this.meetingSchedule,
-   required this.checkinDate,
-   required this.checkinTime,
-   required this.member,
-   required this.notes,
-   required this.createdBY
+    required this.meetingSchedule,
+    required this.checkinDate,
+    required this.checkinTime,
+    required this.member,
+    this.checkoutTime,
+    this.totalHrs,
   });
 
+  /// FROM JSON
   factory CheckinoutModal.fromJson(Map<String, dynamic> json) {
     return CheckinoutModal(
-      id: json['id'],
-      meetingSchedule: json['meeting_schedule'],
-      checkinDate: json['checkin_date'],
-      checkinTime: json['checkin_time'],
-      member: json['member'],
-      notes: json['notes'],
-      createdBY: json['createdBY'],
+      id: json['id'] ?? json['_id'],
+      meetingSchedule: json['meeting_schedule'] ?? "",
+      checkinDate: json['checkin_date'] ?? "",
+      checkinTime: json['checkin_time'] ?? "",
+      member: json['member'] ?? "",
+      checkoutTime: json['checkout_time'],
+      totalHrs: json['total_hrs'],
     );
   }
 
@@ -35,8 +36,8 @@ class CheckinoutModal {
       'checkin_date': checkinDate,
       'checkin_time': checkinTime,
       'member': member,
-      'notes': notes,
-      'createdBY':createdBY,
+      'checkout_time': checkoutTime,
+      'total_hrs': totalHrs,
     };
   }
 }

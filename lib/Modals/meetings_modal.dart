@@ -66,19 +66,21 @@ class MeetingModel {
 
   /// FROM JSON
   factory MeetingModel.fromJson(Map<String, dynamic> json) {
+    final address = json['address'] ?? {};
     return MeetingModel(
+      
       id: _getString(json['id'] ?? json['_id']),
 
       meetingDate: _formatDate(json['meetingDate']),
       meetingTime: _getString(json['meetingTime']),
       meetingLocation: _getString(json['meetingLocation']),
 
-      addressLine1: _getString(json['addressLine1']),
-      addressLine2: _getString(json['addressLine2']),
-      city: _getString(json['city']),
-      state: _getString(json['state']),
-      postalCode: _getString(json['postalCode']),
-      country: _getString(json['country']),
+      addressLine1: _getString(address['addressLine1']),
+    addressLine2: _getString(address['addressLine2']),
+    city: _getString(address['city']),
+    state: _getString(address['state']),
+    postalCode: _getString(address['postalCode']),
+    country: _getString(address['country']),
 
       meetingName: _getString(json['meetingName']),
       meetingAttendees: _getString(json['meetingAttendees']),
