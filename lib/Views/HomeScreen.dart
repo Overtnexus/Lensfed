@@ -608,7 +608,7 @@ bottomNavigationBar: Container(
           break;
   
         case 1:
-          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>AdvertisementScreen()));
+          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>AdsViewScreen()));
           break;
   
         case 2:

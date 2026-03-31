@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:lensfed/Provider/adverticement_provider.dart';
 import 'package:lensfed/Provider/membershipReniew_provider.dart';
 import 'package:lensfed/Services/notification_services.dart';
 import 'package:provider/provider.dart';
@@ -43,6 +44,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CheckinOutProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => MembershipreniewProvider()),
+         ChangeNotifierProvider(create: (_) => AdsProvider()),
       ],
       child: const MyApp(),
     ),

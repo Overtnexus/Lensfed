@@ -20,6 +20,8 @@ class ApiConstants {
   static const String getmembersshipreniew = "/api/membersshipreniew";
   static const String updatemembersshipreniew = "/api/membersshipreniew/";   // + id
   static const String deletemembersshipreniew = "/api/membersshipreniew/"; 
+    static const String checkmembership = "/api/check-membership/";
+
 
   static const String addmembers = "/api/addmembers";
   static const String getmembers = "/api/members";
@@ -56,4 +58,7 @@ class ApiConstants {
   static const String verifyOTP = "/api/verifyOtp"; 
    static const String sendOTPforgot = "/api/forgot/sendOtp"; 
   static const String verifyOTPforgot = "/api/forgot/verifyOtp"; 
+
+  static const String getAddapi = "/api/ads/list";
+   static const String filterAddapi = "/api/ads/filter";
 }

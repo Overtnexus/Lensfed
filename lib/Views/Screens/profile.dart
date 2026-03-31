@@ -39,6 +39,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     
   }
 
+  bool isActive(String? renewalDate) {
+  if (renewalDate == null || renewalDate == "null") return false;
+  try {
+    // Adjust format based on your API (e.g., 'yyyy-MM-dd' or 'dd/MM/yyyy')
+    DateTime expiry = DateTime.parse(renewalDate); 
+    return expiry.isAfter(DateTime.now());
+  } catch (e) {
+    return false;
+  }
+}
+
   @override
   Widget build(BuildContext context) {
 
@@ -161,7 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             SizedBox(width: w*0.16,),
                             IconButton(onPressed: (){
-                              Provider.of<AuthProvider>(context, listen: false).logout2();
+                              Provider.of<AuthProvider>(context, listen: false).logout3(context);
                 Navigator.of(context).push(MaterialPageRoute(builder: (context)=>LoginScreen()));
                             }, icon: Icon(Icons.logout,size: w*0.09,color: AppColors.accentLight,))
                           ],
@@ -209,24 +220,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 
                   const SizedBox(width: 8),
-                   Consumer<MembershipreniewProvider>(
-                  builder: (context, provider, child) {
-                
-                    if (provider.isLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                
-                    if (provider.membershipreniew.isEmpty) {
-                      return const Text("No Renewal Data Found");
-                    }
-                
-                    return Column(
-                      children: provider.membershipreniew
-                          .map((e) => buildActiveCard(e))
-                          .toList(),
-                    );
-                  },
-                )
+                Consumer<MembershipreniewProvider>(
+  builder: (context, provider, child) {
+
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (provider.membershipreniew.isEmpty) {
+      return const Text("No Renewal Data Found");
+    }
+
+    /// ✅ FILTER LATEST PER MEMBER
+    Map<String, dynamic> latestMap = {};
+
+    for (var item in provider.membershipreniew) {
+      final key = item.memberId ?? "";
+
+      if (!latestMap.containsKey(key)) {
+        latestMap[key] = item;
+      } else {
+        final existing = latestMap[key];
+
+        final existingDate =
+            DateTime.tryParse(existing.renewalDate ?? "") ?? DateTime(2000);
+
+        final newDate =
+            DateTime.tryParse(item.renewalDate ?? "") ?? DateTime(2000);
+
+        if (newDate.isAfter(existingDate)) {
+          latestMap[key] = item;
+        }
+      }
+    }
+
+    final latestList = latestMap.values.toList();
+
+    return Column(
+      children: latestList
+          .map((e) => buildActiveCard(e))
+          .toList(),
+    );
+  },
+)
                 
                  
                 ],
@@ -302,8 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _row("Company Name", currentMember.officeAddress?.companyName),
                 _row("Place", currentMember.officeAddress?.officePlace),
                 _row("Post Office", currentMember.officeAddress?.officePostOffice),
-                _row("Pincode", currentMember.officeAddress?.officePinCode),
-               
+                _row("Pincode", currentMember.officeAddress?.officePinCode),      
 
               ]),
 
@@ -321,7 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _row("WelfareNo", currentMember.welfareNo),
                 _row("License No", currentMember.qualification),
               ]),
-              Consumer<MembershipreniewProvider>(
+             Consumer<MembershipreniewProvider>(
   builder: (context, provider, child) {
 
     if (provider.isLoading) {
@@ -332,8 +367,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return const Text("No Renewal Data Found");
     }
 
+    /// ✅ FILTER LATEST PER MEMBER
+    Map<String, dynamic> latestMap = {};
+
+    for (var item in provider.membershipreniew) {
+      final key = item.memberId ?? "";
+
+      if (!latestMap.containsKey(key)) {
+        latestMap[key] = item;
+      } else {
+        final existing = latestMap[key];
+
+        final existingDate =
+            DateTime.tryParse(existing.renewalDate ?? "") ?? DateTime(2000);
+
+        final newDate =
+            DateTime.tryParse(item.renewalDate ?? "") ?? DateTime(2000);
+
+        if (newDate.isAfter(existingDate)) {
+          latestMap[key] = item;
+        }
+      }
+    }
+
+    final latestList = latestMap.values.toList();
+
     return Column(
-      children: provider.membershipreniew
+      children: latestList
           .map((e) => buildRenewalCard(e))
           .toList(),
     );
@@ -385,16 +445,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  bool isActive(String? renewalDate) {
-  if (renewalDate == null || renewalDate.isEmpty) return false;
+//   bool isActive(String? renewalDate) {
+//   if (renewalDate == null || renewalDate.isEmpty) return false;
 
-  try {
-    final expiry = DateTime.parse(renewalDate);
-    return expiry.isAfter(DateTime.now());
-  } catch (e) {
-    return false;
-  }
-}
+//   try {
+//     final expiry = DateTime.parse(renewalDate);
+//     return expiry.isAfter(DateTime.now());
+//   } catch (e) {
+//     return false;
+//   }
+// }
 
   Widget buildActiveCard(MembersshipreniewModal item) {
   final active = isActive(item.renewalDate);

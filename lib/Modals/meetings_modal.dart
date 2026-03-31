@@ -18,6 +18,7 @@ class MeetingModel {
   final String? meetingStatus;
   final String? meetingAgenda;
   final String? meetingReminder;
+  final String? meetingEndTime;
   final String? createdBy;
 
   MeetingModel({
@@ -37,6 +38,7 @@ class MeetingModel {
     this.meetingStatus,
     this.meetingAgenda,
     this.meetingReminder,
+    this.meetingEndTime,
     this.createdBy,
   });
 
@@ -88,6 +90,7 @@ class MeetingModel {
       meetingStatus: _getString(json['meetingStatus']),
       meetingAgenda: _getString(json['meetingAgenda']),
       meetingReminder: _getString(json['meetingReminder']),
+      meetingEndTime: _getString(json['meetingEndTime']),
 
       /// handle both cases
       createdBy: _getString(json['createdBy'] ?? json['createdBY']),
@@ -113,6 +116,7 @@ class MeetingModel {
       "meetingStatus": meetingStatus,
       "meetingAgenda": meetingAgenda,
       "meetingReminder": meetingReminder,
+      "meetingEndTime":meetingEndTime,
       "createdBy": createdBy,
     };
   }

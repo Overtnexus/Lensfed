@@ -1,7 +1,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
+import 'package:lensfed/Provider/membershipReniew_provider.dart';
 import 'package:lensfed/Views/AuthScreens/Login.dart';
+import 'package:lensfed/Views/AuthScreens/subscriptionReniew_screen.dart';
 import 'package:lensfed/Views/HomeScreen.dart';
 import 'package:lensfed/utilities/colors.dart';
 import 'package:lensfed/utilities/fonts.dart';
@@ -49,27 +51,55 @@ void initState() {
 
   checkLogin();
 }
+// Update your navigation logic inside LesnsfedSplash
 Future<void> checkLogin() async {
-
   SharedPreferences prefs = await SharedPreferences.getInstance();
-
   bool isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+  
+  Widget nextScreen = const LoginScreen();
 
   if (isLoggedIn) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final renewProvider = Provider.of<MembershipreniewProvider>(context, listen: false);
 
-    /// Load user into provider
-    await Provider.of<AuthProvider>(context, listen: false)
-        .loadUserFromPrefs();
+    // 1. Load user info
+    await authProvider.loadUserFromPrefs();
+    
+    // 2. Fetch renewal data for this specific member
+    await renewProvider.fetchMembersshipreniew(authProvider.membershipId);
+
+    // 3. Determine if active
+    bool isStillActive = false;
+    if (renewProvider.membershipreniew.isNotEmpty) {
+      // Find the latest renewal date or check the list
+      final latest = renewProvider.membershipreniew.first;
+      isStillActive = isActive(latest.renewalDate);
+    }
+
+    if (isStillActive) {
+      nextScreen = HomeScreen();
+    } else {
+      nextScreen = const AccountRenewalScreen(); 
+    }
   }
 
-  await Future.delayed(const Duration(seconds: 3));
+  await Future.delayed(const Duration(seconds: 2));
 
+  if (!mounted) return;
   Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (_) => isLoggedIn ? HomeScreen() : LoginScreen(),
-    ),
+    context, 
+    MaterialPageRoute(builder: (_) => nextScreen)
   );
+}
+
+bool isActive(String? dateStr) {
+  if (dateStr == null || dateStr == "null") return false;
+  try {
+    DateTime expiry = DateTime.parse(dateStr);
+    return expiry.isAfter(DateTime.now());
+  } catch (e) {
+    return false;
+  }
 }
   @override
   Widget build(BuildContext context) {

@@ -6,6 +6,7 @@ import 'package:lensfed/Modals/checkinOut_modal.dart';
 import 'package:lensfed/Modals/meetings_modal.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
 import 'package:lensfed/Provider/checkinOut_provider.dart';
+import 'package:lensfed/utilities/fonts.dart';
 import 'package:provider/provider.dart';
 
 class MeetingscheckinoutScreen extends StatefulWidget {
@@ -33,6 +34,7 @@ final int totalMinutes = 2;
 
 DateTime? checkinDateTime;
 bool isSubmitted = false;
+int totalDurationSeconds = 0; 
 
 void endMeeting({bool auto = false}) async {
   if (isSubmitted) return;
@@ -83,7 +85,57 @@ void endMeeting({bool auto = false}) async {
     ),
   );
 }
+String calculateDuration(String start, String end) {
+  try {
+    final now = DateTime.now();
 
+    final startParts = start.split(":");
+    final endParts = end.split(":");
+
+    final startDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(startParts[0]),
+      int.parse(startParts[1]),
+      int.parse(startParts[2]),
+    );
+
+    final endDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(endParts[0]),
+      int.parse(endParts[1]),
+      int.parse(endParts[2]),
+    );
+
+    final difference = endDate.difference(startDate);
+
+    final hours = difference.inHours;
+    final minutes = difference.inMinutes.remainder(60);
+
+    return "${hours}h ${minutes}m";
+  } catch (e) {
+    return "0h 0m";
+  }
+}
+int calculateTotalSeconds(String start, String end) {
+  try {
+    final now = DateTime.now();
+    final startParts = start.split(":");
+    final endParts = end.split(":");
+
+    final startDate = DateTime(now.year, now.month, now.day, 
+        int.parse(startParts[0]), int.parse(startParts[1]), int.parse(startParts[2]));
+    final endDate = DateTime(now.year, now.month, now.day, 
+        int.parse(endParts[0]), int.parse(endParts[1]), int.parse(endParts[2]));
+
+    return endDate.difference(startDate).inSeconds;
+  } catch (e) {
+    return 3600; // Default to 1 hour if parsing fails
+  }
+}
 @override
 void initState() {
   super.initState();
@@ -93,27 +145,30 @@ void initState() {
 
   _stopwatch = Stopwatch()..start();
 
+    totalDurationSeconds = calculateTotalSeconds(
+    widget.meeting.meetingTime ?? "00:00:00", 
+    widget.meeting.meetingEndTime ?? "00:00:00"
+  );
+
   _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
     if (_stopwatch.isRunning) {
       setState(() {
         final elapsed = _stopwatch.elapsed;
-
-        /// ⏱ TIMER UI
         hours = elapsed.inHours.toString().padLeft(2, '0');
         minutes = (elapsed.inMinutes % 60).toString().padLeft(2, '0');
         seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
 
-        /// 📊 PROGRESS CALCULATION
+        /// 📊 DYNAMIC PROGRESS CALCULATION
         double elapsedSeconds = elapsed.inSeconds.toDouble();
-        double totalSeconds = totalMinutes * 60;
-
-        progress = elapsedSeconds / totalSeconds;
+        
+        // Progress is now relative to actual meeting length
+        progress = elapsedSeconds / totalDurationSeconds;
 
         if (progress > 1) progress = 1.0;
 
-        /// ⏳ TEXT FORMAT
-        elapsedText = "${(elapsedSeconds / 60).floor()}m";
+        elapsedText = "${elapsed.inMinutes}m";
       });
+
 
       /// ✅ AUTO SAVE WHEN TIME COMPLETES
       if (progress >= 1.0 && !isSubmitted) {
@@ -182,7 +237,7 @@ void dispose() {
 
     final Size size = MediaQuery.of(context).size;
     final double horizontalPadding = size.width > 600 ? size.width * 0.1 : 20.0;
-        DateTime date = DateFormat("dd-MM-yyyy").parse(widget.meeting.meetingDate ?? "");
+    DateTime date = DateFormat("dd-MM-yyyy").parse(widget.meeting.meetingDate ?? "");
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FC),
@@ -228,7 +283,7 @@ void dispose() {
                   const SizedBox(height: 32),
                   _ProgressBar(
   elapsed: elapsedText,
-  total: "${totalMinutes}m",
+  total: calculateDuration(widget.meeting.meetingTime ?? "00:00:00", widget.meeting.meetingEndTime?? "00:00:00"),
   progress: progress,
 ),
                   const SizedBox(height: 24),
@@ -278,7 +333,7 @@ void dispose() {
 
   await provider.addCheckinout(
     CheckinoutModal(
-      meetingSchedule: widget.meeting.id ?? "",
+      meetingSchedule: widget.meeting.meetingName ?? "",
       checkinDate:
           DateFormat("yyyy-MM-dd").format(checkinDateTime!),
       checkinTime:
@@ -293,8 +348,8 @@ void dispose() {
   showDialog(
     context: context,
     builder: (_) => AlertDialog(
-      title: const Text("Meeting Ended"),
-      content: Text("Total Time: $totalTime"),
+      title:  Text("Meeting Ended",style: getFonts(15, Colors.black)),
+      content: Text("Total Time: $totalTime",style: getFonts(14, Colors.black),),
       actions: [
         TextButton(
           onPressed: () {

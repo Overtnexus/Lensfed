@@ -214,6 +214,22 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  Future<Map<String, dynamic>> checkMembership(String memberId) async {
+  final url = Uri.parse(
+    ApiConstants.baseUrl + ApiConstants.checkmembership + memberId,
+  );
+
+
+  final response = await http.get(url);
+
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception("Failed to check membership");
+  }
+}
+
   // UPDATE
   Future<Map<String, dynamic>> updateMembershipReniew(
       String id, Map<String, dynamic> data) async {
@@ -425,6 +441,50 @@ Future<Map<String, dynamic>> adminLogin(
   );
 
   return jsonDecode(response.body);
+}
+
+ Future<List<dynamic>> getAds() async {
+    final res = await http.get(Uri.parse(ApiConstants.baseUrl+ApiConstants.getAddapi));
+    return json.decode(res.body);
+  }
+
+  Future<List<dynamic>> getFilteredAds({
+  String? status,
+  DateTime? fromDate,
+  DateTime? toDate,
+}) async {
+  try {
+    /// Build query params dynamically
+    Map<String, String> queryParams = {};
+
+    if (status != null && status.isNotEmpty) {
+      queryParams['status'] = status;
+    }
+
+    if (fromDate != null) {
+      queryParams['fromDate'] = fromDate.toIso8601String();
+    }
+
+    if (toDate != null) {
+      queryParams['toDate'] = toDate.toIso8601String();
+    }
+
+    /// Build URL
+    final uri = Uri.parse(ApiConstants.baseUrl+ApiConstants.filterAddapi).replace(
+      queryParameters: queryParams,
+    );
+
+    final res = await http.get(uri);
+
+    if (res.statusCode == 200) {
+      return json.decode(res.body);
+    } else {
+      throw Exception("Failed to load filtered ads");
+    }
+
+  } catch (e) {
+    throw Exception("Error: $e");
+  }
 }
 
 }

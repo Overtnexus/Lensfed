@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lensfed/Provider/membershipReniew_provider.dart';
+import 'package:lensfed/Views/AuthScreens/Login.dart';
 import 'package:lensfed/constance/api_constance.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -303,6 +306,20 @@ Future<bool> sendOtp_forgot({
 
   notifyListeners();
 }
+
+
+ void logout3(BuildContext context) {
+    _user = null;
+
+    /// stop membership checking
+    Provider.of<MembershipreniewProvider>(context, listen: false)
+        .stopChecking();
+
+Navigator.of(context).push(MaterialPageRoute(builder: (context)=>LoginScreen()));
+
+
+    notifyListeners();
+  }
 
   /// ================= CHECK LOGIN =================
   bool get isLoggedIn => _user != null;

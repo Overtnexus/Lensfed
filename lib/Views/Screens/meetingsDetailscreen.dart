@@ -160,6 +160,11 @@ void initState() {
                           label: 'REMINDER',
                           value: '${meeting.meetingReminder}',
                         ),
+                         _InfoTile(
+                          icon: Icons.notifications_none_outlined,
+                          label: 'Meet End Time',
+                          value: '${meeting.meetingEndTime}',
+                        ),
 
                         const Divider(height: 40, thickness: 1),
 
