@@ -571,12 +571,12 @@ void openEditDialog(BuildContext context, MembersModal member) {
   final Oplace = TextEditingController(text: member.officeAddress?.officePlace);
   final Opincode = TextEditingController(text: member.officeAddress?.officePinCode);
   final Opostoffice = TextEditingController(text: member.officeAddress?.officePostOffice);
-   final welcareno = TextEditingController(text: member.welfareNo);
+  final welcareno = TextEditingController(text: member.welfareNo);
   final qualification = TextEditingController(text: member.qualification);
 
 
-final w = MediaQuery.of(context).size.width;
-    final h = MediaQuery.of(context).size.height;
+  final w = MediaQuery.of(context).size.width;
+  final h = MediaQuery.of(context).size.height;
 
 
   showDialog(
