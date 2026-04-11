@@ -23,6 +23,10 @@ class MembersModal {
   final String? licenceExpiry;
   final String? welfareNo;
   final String? role;
+   final String? fathername;
+  final String? mothername;
+  final String? fatherMob;
+  final String? parentEmail;
 
   MembersModal({
     this.id,
@@ -45,6 +49,10 @@ class MembersModal {
     this.licenceExpiry,
     this.welfareNo,
     this.role,
+    this.fathername,
+    this.mothername,
+    this.fatherMob,
+    this.parentEmail
   });
 
   factory MembersModal.fromJson(Map<String, dynamic> json) {
@@ -71,6 +79,10 @@ class MembersModal {
       licenceExpiry: json['licenceExpiry']?.toString(),
       welfareNo: json['welfareNo']?.toString(),
       role: json['role']?.toString(),
+      fathername: json['fathername']?.toString(),
+      mothername: json['mothername']?.toString(),
+      fatherMob: json['fatherMob']?.toString(),
+      parentEmail: json['parentEmail']?.toString(),
     );
   }
 
@@ -96,6 +108,10 @@ class MembersModal {
       "licenceExpiry": licenceExpiry,
       "welfareNo": welfareNo,
       "role": role,
+        "fathername": fathername ?? "",
+      "mothername": mothername ?? "",
+      "fatherMob": fatherMob ?? "",
+      "parentEmail": parentEmail ?? "",
     };
   }
 }

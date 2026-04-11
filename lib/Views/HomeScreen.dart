@@ -1,25 +1,23 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:custom_floating_navigation_bar/custom_floating_navigation_bar.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lensfed/Modals/member_modal.dart';
-import 'package:lensfed/Modals/notification_modal.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
+import 'package:lensfed/Provider/adverticement_provider.dart';
 import 'package:lensfed/Provider/meeting_provider.dart';
 import 'package:lensfed/Provider/member_provider.dart';
 import 'package:lensfed/Provider/notication_provider.dart';
 import 'package:lensfed/Views/AuthScreens/Login.dart';
-import 'package:lensfed/Views/Screens/AdsScreen.dart';
 import 'package:lensfed/Views/Screens/Meetings.dart';
-import 'package:lensfed/Views/Screens/checkinOut.dart';
 import 'package:lensfed/Views/Screens/notificationScreen.dart';
 import 'package:lensfed/Views/Screens/profile.dart';
+import 'package:lensfed/components/clipperAdds.dart';
 import 'package:lensfed/utilities/colors.dart';
 
 import 'package:lensfed/utilities/fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:super_animated_navigation_bar/super_animated_navigation_bar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ModuleItem {
   final String title;
@@ -55,6 +53,9 @@ void initState() {
  _pageController = PageController(viewportFraction: 0.9);
 
   startAutoScroll();
+    Future.microtask(() {
+    Provider.of<AdsProvider>(context, listen: false).fetchAds();
+  });
 
   Future.microtask(() {
     Provider.of<MemberProvider>(context, listen: false).fetchMembers();
@@ -76,6 +77,7 @@ void initState() {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
 
   context.read<NotificationProvider>().fetchNotification();
+  
 
 });
 
@@ -126,48 +128,7 @@ void startAutoScroll() {
 
   @override
   Widget build(BuildContext context) {
-final formsTab = [
-       ModuleItem(
-      title: "Check In / Check Out",
-      desc: "Meeting Times & track meetings",
-      icon: Icons.timeline_sharp),
-  ModuleItem(
-      title: "Meetings",
-      desc: "Track meetings",
-      icon: Icons.calendar_today),
-      // ModuleItem(
-      // title: "Meetings Minutes",
-      // desc: "Time & track meetings",
-      // icon: Icons.timelapse),
-     
-      ModuleItem(
-      title: "Notifications",
-      desc: "Remind",
-      icon: Icons.notification_add),
-  ModuleItem(
-      title: "Exit",
-      desc: "Close application",
-      icon: Icons.exit_to_app),
-];
 
-final reportTab = [
-  ModuleItem(
-      title: "Meetings Report",
-      desc: "Schedule & track meetings",
-      icon: Icons.calendar_today),
-  ModuleItem(
-      title: "Membership Report",
-      desc: "Manage members",
-      icon: Icons.people),
-  ModuleItem(
-      title: "Payments Report",
-      desc: "Fees & transactions",
-      icon: Icons.payment),
-  ModuleItem(
-      title: "Exit",
-      desc: "Close application",
-      icon: Icons.exit_to_app),
-];
 
     final width = MediaQuery.of(context).size.width;
 
@@ -193,8 +154,8 @@ final loggedMember = memberProvider
        key: _scaffoldKey,
       drawer: _buildDrawer(context, loggedMember),
       body: Column(
-  children: [
-    Container(
+        children: [
+          Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(
         screenWidth * 0.05,   
@@ -236,10 +197,10 @@ final loggedMember = memberProvider
                     ),
                     Text("WELCOME",style: getFonts(W*0.05, AppColors.accentLight),),
                   Consumer<NotificationProvider>(
-  builder: (context, provider, child) {
-    return Stack(
+        builder: (context, provider, child) {
+          return Stack(
       children: [
-
+      
         IconButton(
           icon: Icon(
             Icons.notifications,
@@ -247,17 +208,17 @@ final loggedMember = memberProvider
             size: H * 0.04,
           ),
           onPressed: () {
-
+      
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => const NotificationScreen(),
               ),
             );
-
+      
           },
         ),
-
+      
         if (provider.notifications.length > 0)
           Positioned(
             right: W*0.01,
@@ -278,14 +239,14 @@ final loggedMember = memberProvider
               ),
             ),
           ),
-
+      
       ],
-    );
-  },
-)
+          );
+        },
+      )
                   ],
                 ),
-                 const SizedBox(height: 10),
+                 SizedBox(height: H*0.003,),
           Text(
                   "${user?["fullName"] ?? "User"} 👋",
                   style: TextStyle(
@@ -294,266 +255,25 @@ final loggedMember = memberProvider
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
-          SizedBox(height: screenWidth * 0.015), 
-
+      
+          SizedBox(height: screenWidth * 0.013), 
+      
           Text(
             "The Licensed Engineers and Supervisors Federation (LESF) is an organization that represents the interests of licensed engineers, technical professionals, and supervisors across various industries.",
             style:drewerFonts()
           ),
-
+      
           SizedBox(height: screenWidth * 0.01), 
           
-    Consumer<MeetingProvider>(
-  builder: (context, provider, child) {
-
-    final size = MediaQuery.of(context).size;
-    final width = size.width;
-    final height = size.height;
-
-    if (provider.meeting.isEmpty) {
-      return const SizedBox();
-    }
-
-    final meetings = provider.meeting.take(3).toList();
-
-    return SizedBox(
-      height: height * 0.22, // ✅ responsive height
-
-      child: GestureDetector(
-        onPanDown: (_) => isUserTouching = false,
-        onPanEnd: (_) => isUserTouching = false,
-        onPanCancel: () => isUserTouching = false,
-
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: meetings.length,
-
-          onPageChanged: (index) {
-            setState(() {
-              _currentPage = index;
-            });
-          },
-
-          itemBuilder: (context, index) {
-
-            final meeting = meetings[index];
-
-            bool isActive = index == _currentPage;
-
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-
-              margin: EdgeInsets.symmetric(
-                horizontal: width * 0.01,
-                vertical: isActive
-                    ? height * 0.01
-                    : height * 0.02,
-              ),
-
-              transform: Matrix4.identity()
-                ..scale(isActive ? 1.0 : 0.92),
-
-              padding: EdgeInsets.all(width * 0.04),
-
-              decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(width * 0.05),
-
-                gradient: LinearGradient(
-                  colors: isActive
-                      ? [Color(0xff4f46e5), Color(0xff6366f1)]
-                      : [
-                          Colors.grey.shade400,
-                          Colors.grey.shade500
-                        ],
-                ),
-
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(
-                        isActive ? 0.25 : 0.1),
-                    blurRadius: isActive ? 12 : 6,
-                    offset: const Offset(0, 5),
-                  )
-                ],
-              ),
-
-              child: Row(
-                children: [
-
-                  /// DATE BOX
-                  Container(
-                    width: width * 0.18,
-                    padding: EdgeInsets.symmetric(
-                        vertical: height * 0.015),
-
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(
-                          width * 0.04),
-                    ),
-
-                    child: Column(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          getDay(meeting.meetingDate),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: width * 0.055,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          getMonth(meeting.meetingDate),
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: width * 0.03,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(width: width * 0.03),
-
-                  /// DETAILS
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
-                      children: [
-
-                        Text(
-                          meeting.meetingName ?? "",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: width * 0.04,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        SizedBox(height: height * 0.006),
-
-                        Row(
-                          children: [
-                            Icon(Icons.location_on,
-                                color: Colors.white70,
-                                size: width * 0.035),
-                            SizedBox(width: width * 0.01),
-                            Expanded(
-                              child: Text(
-                                meeting.meetingLocation ?? "",
-                                maxLines: 1,
-                                overflow:
-                                    TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: width * 0.032,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: height * 0.006),
-
-                        Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                color: Colors.white70,
-                                size: width * 0.035),
-                            SizedBox(width: width * 0.01),
-                            Text(
-                              meeting.meetingTime ?? "",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: width * 0.032,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: height * 0.01),
-
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: width * 0.03,
-                            vertical: height * 0.004,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius:
-                                BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            meeting.meetingType ?? "",
-                            style: TextStyle(
-                              color:
-                                  const Color(0xff4f46e5),
-                              fontSize: width * 0.028,
-                              fontWeight:
-                                  FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  },
-),
-
-          // GridView.count(
-          //   crossAxisCount: gridCount,
-          //   shrinkWrap: true,
-          //   crossAxisSpacing: screenWidth * 0.03, 
-          //   mainAxisSpacing: screenWidth * 0.02,  
-          //   physics: const NeverScrollableScrollPhysics(),
-          //   childAspectRatio: 1.5,
-          //   children: [
-          //     _statCard(context, "8", "Upcoming Meetings"),
-          //     _statCard(context, "23", "Notifications"),
-          //   ],
-          // ),
+          beautifulImageSlider(context)
+      
         ],
       ),
-    ),
-    SizedBox(height: H*0.008,),
-    Text("Events",style: getFonts(H*0.017, AppColors.cardDark),),
-    Container(
-      height: H*0.3,
-      decoration: BoxDecoration(
-        color: AppColors.foregroundDark,
-         border: Border.all(
-      color: Colors.white.withOpacity(0.2),
-      width: 1.5,
-    ),
-     boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.25),
-        blurRadius: 15,
-        offset: const Offset(0, 8),
+          ),
+          SizedBox(height: H*0.003,),
+          adsPosterSlider(),
+        ],
       ),
-    ],
-      ),
-      child: beautifulImageSlider(context),
-    ),
-  ],
-),
 bottomNavigationBar: Container(
   decoration: BoxDecoration(borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))),
   child: SuperAnimatedNavBar(
@@ -564,7 +284,7 @@ bottomNavigationBar: Container(
       indeicatorColor: Colors.deepPurple.shade900,
       glowEnable: true,
       glowColor: Colors.white,
-      glowRadius: 24,
+      glowRadius: screenWidth * 0.06,
       indicatorPosition: IndicatorPosition.bottom,
       curve: Curves.easeInOutBack,
       animateDuration: const Duration(milliseconds: 800),
@@ -574,11 +294,6 @@ bottomNavigationBar: Container(
     NavigationBarItem(
       selectedIcon: _navItem(Icons.home_filled, "Home", true),
       unSelectedIcon: _navItem(Icons.home_outlined, "Home", false),
-    ),
-  
-    NavigationBarItem(
-      selectedIcon: _navItem(Icons.ad_units, "Ads", true),
-      unSelectedIcon: _navItem(Icons.ad_units, "Ads", false),
     ),
   
     NavigationBarItem(
@@ -608,19 +323,15 @@ bottomNavigationBar: Container(
           break;
   
         case 1:
-          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>AdsViewScreen()));
-          break;
-  
-        case 2:
           Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MeetingScreen()));
   
           break;
   
-        case 3:
+        case 2:
                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>NotificationScreen()));
   
           break;
-          case 4:
+          case 3:
                           Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ProfileScreen()));
 
           break;
@@ -633,6 +344,102 @@ bottomNavigationBar: Container(
 ),
     );
   }
+
+Widget adsPosterSlider() {
+  return Consumer<AdsProvider>(
+    builder: (context, adsProvider, child) {
+      final mq = MediaQuery.of(context);
+      final height = mq.size.height;
+      final width = mq.size.width;
+
+      // 🔥 Responsive scale factors
+      final padding = width * 0.035;
+      final smallGap = width * 0.015;
+      final iconSize = width * 0.04;
+      final fontSize = width * 0.032;
+
+      /// 1️⃣ FILTER: Active Ads Only
+      final now = DateTime.now();
+      final activeAds = adsProvider.ads.where((ad) {
+        if (ad.startDate == null || ad.endDate == null) return true;
+        return now.isAfter(ad.startDate!) &&
+            now.isBefore(ad.endDate!.add(const Duration(days: 1)));
+      }).toList();
+
+      /// LOADING
+      if (adsProvider.isLoading) {
+        return SizedBox(
+          height: height * 0.3,
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      /// EMPTY
+      if (activeAds.isEmpty) return const SizedBox.shrink();
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// 🔹 HEADER
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: padding,
+              vertical: smallGap,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.campaign,
+                  color: const Color(0xFF7C3AED),
+                  size: iconSize,
+                ),
+                SizedBox(width: smallGap),
+                Text(
+                  "SPECIAL NOTICES",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: fontSize,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          /// 🔹 SLIDER
+          SizedBox(
+            height: height * 0.3,
+            child: PageView.builder(
+              controller: PageController(
+                viewportFraction: width < 600 ? 0.92 : 0.7, // 🔥 responsive
+              ),
+              itemCount: activeAds.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: width * 0.01),
+                  child: GestureDetector(
+                    onTap: () async {
+                      final link = activeAds[index].attachmentLink;
+                      if (link != null) {
+                        await launchUrl(
+                          Uri.parse(link),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      }
+                    },
+                    child: ModernAdPoster(ad: activeAds[index]),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+  
 Widget beautifulImageSlider(BuildContext context) {
   final width = MediaQuery.of(context).size.width;
   final height = MediaQuery.of(context).size.height;
@@ -653,7 +460,7 @@ Widget beautifulImageSlider(BuildContext context) {
       return Column(
         children: [
           SizedBox(
-            height: height * 0.25,
+            height: height * 0.21,
             child: PageView.builder(
               controller: controller,
               itemCount: images.length,
@@ -668,7 +475,7 @@ Widget beautifulImageSlider(BuildContext context) {
                   ),
 
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(width * 0.05),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.2),
@@ -679,7 +486,7 @@ Widget beautifulImageSlider(BuildContext context) {
                   ),
 
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(width * 0.05),
                     child: Image.asset(
                       images[index],
                       fit: BoxFit.cover,
@@ -700,7 +507,7 @@ Widget beautifulImageSlider(BuildContext context) {
             children: List.generate(images.length, (index) {
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
+                margin:  EdgeInsets.symmetric(horizontal: height * 0.005),
                 width: currentPage == index ? 14 : 8,
                 height: 8,
                 decoration: BoxDecoration(
@@ -725,7 +532,7 @@ Widget beautifulImageSlider(BuildContext context) {
     children: [
       Icon(
         icon,
-        size: isSelected ? 26 : 24,
+        size: isSelected ? W * 0.07 : W * 0.06,
         color: isSelected ? Colors.deepPurple.shade900 : Colors.grey,
       ),
        SizedBox(height: W*0.001),
@@ -761,6 +568,7 @@ String getMonth(String? date) {
   }
 }
 Widget _buildDrawer(BuildContext context, MembersModal? member) {
+  final W = MediaQuery.of(context).size.width;
   return Drawer(
     child: SafeArea(
       child: Column(
@@ -781,8 +589,8 @@ Widget _buildDrawer(BuildContext context, MembersModal? member) {
                 member?.fullName != null
                     ? member!.fullName![0].toUpperCase()
                     : "U",
-                style: const TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold),
+                style:  TextStyle(
+                    fontSize: W * 0.06, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -790,7 +598,7 @@ Widget _buildDrawer(BuildContext context, MembersModal? member) {
           /// DETAILS
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding:  EdgeInsets.symmetric(horizontal:  W* 0.04),
               children: [
 
                 _infoTile(Icons.phone, "Mobile",
@@ -813,7 +621,7 @@ Widget _buildDrawer(BuildContext context, MembersModal? member) {
 
           /// LOGOUT
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding:  EdgeInsets.all(W* 0.04),
             child: ListTile(
               tileColor: Colors.red.withOpacity(0.1),
               shape: RoundedRectangleBorder(
@@ -836,35 +644,50 @@ Widget _buildDrawer(BuildContext context, MembersModal? member) {
   );
 }
 Widget _infoTile(IconData icon, String title, String value) {
+  final w = MediaQuery.of(context).size.width;
+  final h = MediaQuery.of(context).size.height;
+
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
+    padding: EdgeInsets.symmetric(
+      vertical: h * 0.01, // 8
+    ),
     child: Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(w * 0.03), // 12
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(w * 0.03), // 12
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blueAccent),
-          const SizedBox(width: 12),
+          Icon(
+            icon,
+            color: Colors.blueAccent,
+            size: w * 0.05, // responsive icon size
+          ),
+
+          SizedBox(width: w * 0.03), // 12
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: w * 0.03, // 12
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                const SizedBox(height: 4),
+
+                SizedBox(height: h * 0.005), // 4
+
                 Text(
                   value,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: w * 0.037, // 15
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -875,190 +698,6 @@ Widget _infoTile(IconData icon, String title, String value) {
   );
 }
 
-
-Widget _statCard(
-  BuildContext context,
-  String value,
-  String label,
-) {
-  final screenWidth = MediaQuery.of(context).size.width;
-
-  return Container(
-    padding: EdgeInsets.all(screenWidth * 0.03), // was 12
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.15),
-      borderRadius: BorderRadius.circular(
-        screenWidth * 0.04, // was 16
-      ),
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: screenWidth * 0.045, // was 18
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(
-          height: screenWidth * 0.01, // was 4
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: screenWidth * 0.03, // was 12
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildTabContent(List<ModuleItem> modules) {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final screenHeight = MediaQuery.of(context).size.height;
-
-  final gridItemWidth = screenWidth * 0.4;
-  final gridItemHeight = screenHeight * 0.25;
-
-  return Padding(
-    padding: EdgeInsets.symmetric(
-      
-      horizontal: screenWidth * 0.04,
-    ),
-    child: GridView.builder(
-      itemCount: modules.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: screenWidth > 900
-            ? 4
-            : screenWidth > 600
-                ? 3
-                : 2,
-        mainAxisSpacing: screenHeight * 0.02,
-        crossAxisSpacing: screenWidth * 0.03,
-        childAspectRatio: gridItemWidth / gridItemHeight,
-      ),
-      itemBuilder: (context, index) {
-        final module = modules[index];
-
-        return GestureDetector(
-          onTap: () {
-            switch (module.title) {
-                case "Check In / Check Out":
-                //  Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (_) => const CheckinOutScreen(),
-                //   ),
-                // );
-                break;
-                case "Meetings":
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const MeetingScreen(),
-                  ),
-                );
-                break;
-               
-                case "Notifications":
-                 Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const NotificationScreen(),
-                  ),
-                );
-                break;
-
-              case "Exit":
-                _exitApp();
-                break;
-
-            }
-          },
-          child: _moduleCard(
-            module.icon,
-            module.title,
-            module.desc,
-          ),
-        );
-      },
-    ),
-  );
-}
-
-final List<ModuleItem> modules = [
-  // ModuleItem(
-  //   icon: Icons.login,
-  //   title: "Check In / Check Out",
-  //   desc: "Mark attendance",
-  //   screen: const CheckinOutScreen(),
-  // ),
-  ModuleItem(
-    icon: Icons.people,
-    title: "Meetings",
-    desc: "View meetings",
-    screen: const MeetingScreen(),
-  ),
-  ModuleItem(
-    icon: Icons.notifications,
-    title: "Notifications",
-    desc: "View alerts",
-    screen: const NotificationScreen(),
-  ),
-  ModuleItem(
-    icon: Icons.exit_to_app,
-    title: "Exit",
-    desc: "Close app",
-  ),
-];
-
-  Widget _moduleCard(IconData icon, String title, String desc) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    return Card(
-      color: AppColors.backgroundLight,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.05)),
-      child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Center(
-              child: CircleAvatar(
-                radius: screenWidth*0.08,
-                backgroundColor: Colors.deepPurple.shade100,
-                child: Icon(icon, color: Colors.deepPurple,size: screenWidth*0.08,),
-              ),
-            ),
-           SizedBox(height: screenWidth * 0.04),
-            Text(title,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: screenWidth * 0.04)),
-            SizedBox(height: screenWidth * 0.01),
-            Text(desc,
-                style: TextStyle(fontSize: screenWidth * 0.03, color: Colors.grey)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _reportTile(String title, String subtitle,BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    return Card(
-      margin:EdgeInsets.only(bottom: screenWidth * 0.03),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.04)),
-      child: ListTile(
-        leading: const Icon(Icons.bar_chart, color: Colors.deepPurple),
-        title: Text(title),
-        subtitle: Text(subtitle),
-      ),
-    );
-  }
 
    void _exitApp() {
     showDialog(

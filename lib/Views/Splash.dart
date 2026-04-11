@@ -51,7 +51,6 @@ void initState() {
 
   checkLogin();
 }
-// Update your navigation logic inside LesnsfedSplash
 Future<void> checkLogin() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool("isLoggedIn") ?? false;

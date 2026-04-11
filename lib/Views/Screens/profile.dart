@@ -26,8 +26,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
  Future.microtask(() {
     final auth =
         Provider.of<AuthProvider>(context, listen: false);
-
-    /// fetch renewal using MEMBER ID
     Provider.of<MembershipreniewProvider>(context, listen: false)
         .fetchMembersshipreniew(auth.membershipId);
   });
@@ -42,7 +40,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isActive(String? renewalDate) {
   if (renewalDate == null || renewalDate == "null") return false;
   try {
-    // Adjust format based on your API (e.g., 'yyyy-MM-dd' or 'dd/MM/yyyy')
     DateTime expiry = DateTime.parse(renewalDate); 
     return expiry.isAfter(DateTime.now());
   } catch (e) {
@@ -109,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,
-                        blurRadius: 10,
+                        blurRadius:w * 0.025,
                         offset: Offset(0, 4),
                       )
                     ],
@@ -124,8 +121,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         height: 110,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(20),
+                          borderRadius:  BorderRadius.vertical(
+                            top: Radius.circular(w * 0.05),
                           ),
                           gradient: const LinearGradient(
                             colors: [Color(0xff7b61ff), Color(0xff4f8cff)],
@@ -137,10 +134,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             CircleAvatar(
-                              radius: 40,
+                              radius: w * 0.10,
                               backgroundColor: Colors.white,
                               child: CircleAvatar(
-                                radius: 35,
+                                radius: w * 0.087,
                                 backgroundColor: const Color(0xff6c63ff),
                                 child: Text(
                                   (currentMember.fullName ?? "U")[0]
@@ -154,23 +151,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             SizedBox(width: w*0.02,),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                                    currentMember.fullName ?? "-",
-                                                    style: getFonts(w*0.05, Colors.white)
-                                                  ),
-                                                   Text(
-                "${currentMember.officeAddress?.companyName ?? "-"} · ${currentMember.officeAddress?.officePlace ?? "-"}",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: w * 0.028,
-                ),
+                            Container(
+                              width: w*0.5,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    child: Text(
+                                                        currentMember.fullName ?? "-",
+                                                        style: getFonts(w*0.04, Colors.white)
+                                                      ),
+                                  ),
+                                         
+                                ],
+                              ),
                             ),
-                              ],
-                            ),
-                            SizedBox(width: w*0.16,),
+                            SizedBox(width: w*0.02,),
                             IconButton(onPressed: (){
                               Provider.of<AuthProvider>(context, listen: false).logout3(context);
                 Navigator.of(context).push(MaterialPageRoute(builder: (context)=>LoginScreen()));
@@ -182,11 +178,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       /// ⚪ BOTTOM CONTENT
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                        decoration: const BoxDecoration(
+                      padding: EdgeInsets.fromLTRB(
+  w * 0.04,   // 16
+  h * 0.012,  // 10
+  w * 0.04,   // 16
+  h * 0.02,   // 16
+),
+                        decoration:  BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.vertical(
-                            bottom: Radius.circular(20),
+                            bottom: Radius.circular(w * 0.05),
                           ),
                         ),
                         child: Column(
@@ -203,17 +204,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                        Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:  EdgeInsets.symmetric(
+                        horizontal:  w * 0.025, vertical: h * 0.005),
                     decoration: BoxDecoration(
                       color: Colors.purple.shade100,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(w * 0.05),
                     ),
                     child: Text(
                       currentMember.role ?? "Member",
-                      style: const TextStyle(
+                      style:  TextStyle(
                         color: Colors.purple,
-                        fontSize: 12,
+                        fontSize:  h * 0.013,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -342,6 +343,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               ]),
 
+               SizedBox(height: h * 0.02),
+              _sectionCard("Parent Details", [
+                _row("Father Name", currentMember.fathername),
+                _row("Mother Name", currentMember.mothername),
+                _row("Mob", currentMember.fatherMob),
+                _row("Email", currentMember.parentEmail),      
+
+              ]),
+
               SizedBox(height: h * 0.02),
 
               /// LICENSE
@@ -408,43 +418,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   /// COMMON UI
 
-  Widget _sectionCard(String title, List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.all(12),
-            child: Text(title,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          const Divider(height: 1),
-          ...children
-        ],
-      ),
-    );
-  }
+Widget _sectionCard(String title, List<Widget> children) {
+  final w = MediaQuery.of(context).size.width;
+  final h = MediaQuery.of(context).size.height;
 
-  Widget _row(String title, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
-          Flexible(
-            child: Text(value ?? "-",
-                textAlign: TextAlign.right,
-                style: const TextStyle(fontWeight: FontWeight.w500)),
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(w * 0.04), // 15 → responsive
+    ),
+    child: Column(
+      children: [
+        Container(
+          alignment: Alignment.centerLeft,
+          padding: EdgeInsets.all(w * 0.03), // 12 → responsive
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: w * 0.035, // responsive font
+            ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+
+        Divider(
+          height: h * 0.002, // 1 → responsive
+        ),
+
+        ...children,
+      ],
+    ),
+  );
+}
+
+Widget _row(String title, String? value) {
+  final w = MediaQuery.of(context).size.width;
+  final h = MediaQuery.of(context).size.height;
+
+  return Padding(
+    padding: EdgeInsets.symmetric(
+      horizontal: w * 0.04, // 16 → responsive
+      vertical: h * 0.012,  // 10 → responsive
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: w * 0.032, // responsive font
+          ),
+        ),
+        Flexible(
+          child: Text(
+            value ?? "-",
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: w * 0.034, // slightly bigger for value
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 //   bool isActive(String? renewalDate) {
 //   if (renewalDate == null || renewalDate.isEmpty) return false;
 
@@ -456,83 +495,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
 //   }
 // }
 
-  Widget buildActiveCard(MembersshipreniewModal item) {
+Widget buildActiveCard(MembersshipreniewModal item) {
+  final w = MediaQuery.of(context).size.width;
+  final h = MediaQuery.of(context).size.height;
+
   final active = isActive(item.renewalDate);
 
   return Container(
-    padding: const EdgeInsets.symmetric(
-        horizontal: 10, vertical: 4),
+    padding: EdgeInsets.symmetric(
+      horizontal: w * 0.025, // 10
+      vertical: h * 0.005,   // 4
+    ),
     decoration: BoxDecoration(
-      color: active
-          ? Colors.green.shade100
-          : Colors.red.shade100,
-      borderRadius: BorderRadius.circular(20),
+      color: active ? Colors.green.shade100 : Colors.red.shade100,
+      borderRadius: BorderRadius.circular(w * 0.05), // 20
     ),
     child: Text(
       active ? "Active" : "Expired",
       style: TextStyle(
-        color:
-            active ? Colors.green : Colors.red,
-        fontSize: 12,
+        color: active ? Colors.green : Colors.red,
+        fontSize: w * 0.03, // 12
       ),
     ),
   );
 }
-  Widget buildRenewalCard(MembersshipreniewModal item) {
+Widget buildRenewalCard(MembersshipreniewModal item) {
+  final w = MediaQuery.of(context).size.width;
+  final h = MediaQuery.of(context).size.height;
+
   final active = isActive(item.renewalDate);
 
   return Container(
-    margin: const EdgeInsets.symmetric(vertical: 8),
-    padding: const EdgeInsets.all(14),
+    margin: EdgeInsets.symmetric(
+      vertical: h * 0.01, // 8
+    ),
+    padding: EdgeInsets.all(w * 0.035), // 14
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(w * 0.035), // 14
       boxShadow: [
         BoxShadow(
           color: Colors.grey.shade200,
-          blurRadius: 6,
-          offset: const Offset(0, 3),
+          blurRadius: w * 0.015, // 6
+          offset: Offset(0, h * 0.004), // 3
         )
       ],
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        /// TOP ROW
+        /// 🔹 TOP ROW
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               "Member ID: ${item.memberId}",
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: w * 0.035, // responsive
+              ),
             ),
 
+            /// STATUS BADGE
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
+              padding: EdgeInsets.symmetric(
+                horizontal: w * 0.025, // 10
+                vertical: h * 0.005,   // 4
+              ),
               decoration: BoxDecoration(
                 color: active
                     ? Colors.green.shade100
                     : Colors.red.shade100,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(w * 0.05), // 20
               ),
               child: Text(
                 active ? "Active" : "Expired",
                 style: TextStyle(
-                  color:
-                      active ? Colors.green : Colors.red,
-                  fontSize: 12,
+                  color: active ? Colors.green : Colors.red,
+                  fontSize: w * 0.03, // 12
                 ),
               ),
             )
           ],
         ),
 
-        const SizedBox(height: 10),
+        SizedBox(height: h * 0.012), // 10
 
-        /// DETAILS
+        /// 🔹 DETAILS
         _renewRow("Renewal Date", item.renewalDate),
         _renewRow("Payment Date", item.paymentDate),
         _renewRow("Amount", "₹${item.amount}"),
@@ -573,6 +622,11 @@ void openEditDialog(BuildContext context, MembersModal member) {
   final Opostoffice = TextEditingController(text: member.officeAddress?.officePostOffice);
   final welcareno = TextEditingController(text: member.welfareNo);
   final qualification = TextEditingController(text: member.qualification);
+  final fathername =TextEditingController(text: member.fathername);
+    final mothername =TextEditingController(text: member.mothername);
+    final fatherMob =TextEditingController(text: member.fatherMob);
+     final parentEmail =TextEditingController(text: member.parentEmail);
+
 
 
   final w = MediaQuery.of(context).size.width;
@@ -617,6 +671,12 @@ void openEditDialog(BuildContext context, MembersModal member) {
                 _buildField("District", district),
                 _buildField("Unit", unit),
                 _buildField("Area", area),
+                Text("Parent Details",style: getFonts(h*0.02, Colors.black),),
+                 SizedBox(height: h*0.01,),
+                  _buildField("Father Name",fathername ),
+                _buildField("Mother Name", mothername),
+                _buildField("Mob", fatherMob),
+                _buildField("Email", parentEmail),
 
                 Text("Offfice Address",style: getFonts(h*0.02, Colors.black),),
                  SizedBox(height: h*0.01,),

@@ -232,219 +232,325 @@ void dispose() {
   super.dispose();
 }
   @override
-  Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+@override
+Widget build(BuildContext context) {
+  final authProvider = Provider.of<AuthProvider>(context);
 
-    final Size size = MediaQuery.of(context).size;
-    final double horizontalPadding = size.width > 600 ? size.width * 0.1 : 20.0;
-    DateTime date = DateFormat("dd-MM-yyyy").parse(widget.meeting.meetingDate ?? "");
+  final Size size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FC),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF667085)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        titleSpacing: 0,
-        title: const Text(
-          'Back to Meetings',
-          style: TextStyle(color: Color(0xFF667085), fontSize: 16, fontWeight: FontWeight.w500),
+  // 🔥 Responsive scale factors
+  final double baseWidth = 375; // reference mobile width
+  double w(double val) => size.width * (val / baseWidth);
+  double h(double val) => size.height * (val / 812);
+
+  final double horizontalPadding =
+      size.width > 600 ? size.width * 0.1 : w(20);
+
+  DateTime date =
+      DateFormat("dd-MM-yyyy").parse(widget.meeting.meetingDate ?? "");
+
+  return Scaffold(
+    backgroundColor: const Color(0xFFF8F9FC),
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back,
+            color: const Color(0xFF667085), size: w(20)),
+        onPressed: () => Navigator.pop(context),
+      ),
+      titleSpacing: 0,
+      title: Text(
+        'Back to Meetings',
+        style: TextStyle(
+          color: const Color(0xFF667085),
+          fontSize: w(16),
+          fontWeight: FontWeight.w500,
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 10),
-        child: Column(
-          children: [
-            // --- TOP CARD: MEETING IN PROGRESS ---
-            _CustomCard(
-              child: Column(
-                children: [
-                  const _StatusBadge(label: 'MEETING IN PROGRESS', color: Color(0xFF027A48), bgColor: Color(0xFFECFDF3)),
-                  const SizedBox(height: 16),
-                   Text(
-                    '${widget.meeting.meetingName}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF101828)),
+    ),
+    body: SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding, vertical: h(10)),
+      child: Column(
+        children: [
+          _CustomCard(
+            child: Column(
+              children: [
+                const _StatusBadge(
+                    label: 'MEETING IN PROGRESS',
+                    color: Color(0xFF027A48),
+                    bgColor: Color(0xFFECFDF3)),
+                SizedBox(height: h(16)),
+
+                Text(
+                  '${widget.meeting.meetingName}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: w(20),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF101828),
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _TimerBlock(value: hours, label: 'HOURS', size: size),
-                      _TimerSeparator(size: size),
-                      _TimerBlock(value: minutes, label: 'MINUTES', size: size),
-                      _TimerSeparator(size: size),
-                      _TimerBlock(value: seconds, label: 'SECONDS', size: size),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  _ProgressBar(
-  elapsed: elapsedText,
-  total: calculateDuration(widget.meeting.meetingTime ?? "00:00:00", widget.meeting.meetingEndTime?? "00:00:00"),
-  progress: progress,
-),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                         onPressed: () {
-  setState(() {
-    if (_stopwatch.isRunning) {
-      _stopwatch.stop();
-      isRunning = false;
-    } else {
-      _stopwatch.start();
-      isRunning = true;
-    }
-  });
-},
-                          icon: const Icon(Icons.check_box_outline_blank, color: Color(0xFF344054)),
-                          label: const Text('Pause', style: TextStyle(color: Color(0xFF344054), fontWeight: FontWeight.w600)),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: const BorderSide(color: Color(0xFFD0D5DD)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+
+                SizedBox(height: h(24)),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _TimerBlock(value: hours, label: 'HOURS', size: size),
+                    _TimerSeparator(size: size),
+                    _TimerBlock(value: minutes, label: 'MINUTES', size: size),
+                    _TimerSeparator(size: size),
+                    _TimerBlock(value: seconds, label: 'SECONDS', size: size),
+                  ],
+                ),
+
+                SizedBox(height: h(32)),
+
+                _ProgressBar(
+                  elapsed: elapsedText,
+                  total: calculateDuration(
+                      widget.meeting.meetingTime ?? "00:00:00",
+                      widget.meeting.meetingEndTime ?? "00:00:00"),
+                  progress: progress,
+                ),
+
+                SizedBox(height: h(24)),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            if (_stopwatch.isRunning) {
+                              _stopwatch.stop();
+                              isRunning = false;
+                            } else {
+                              _stopwatch.start();
+                              isRunning = true;
+                            }
+                          });
+                        },
+                        icon: Icon(Icons.check_box_outline_blank,
+                            color: const Color(0xFF344054), size: w(18)),
+                        label: Text(
+                          'Pause',
+                          style: TextStyle(
+                            color: const Color(0xFF344054),
+                            fontWeight: FontWeight.w600,
+                            fontSize: w(14),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                      onPressed: () async {
-  if (isSubmitted) return;
-
-  isSubmitted = true;
-
-  _stopwatch.stop();
-  _timer.cancel();
-
-  final checkoutDateTime = DateTime.now();
-  final difference = checkoutDateTime.difference(checkinDateTime!);
-
-  String totalTime =
-      "${difference.inHours}h ${difference.inMinutes % 60}m";
-
-  final provider =
-      Provider.of<CheckinOutProvider>(context, listen: false);
-
-  await provider.addCheckinout(
-    CheckinoutModal(
-      meetingSchedule: widget.meeting.meetingName ?? "",
-      checkinDate:
-          DateFormat("yyyy-MM-dd").format(checkinDateTime!),
-      checkinTime:
-          DateFormat("HH:mm:ss").format(checkinDateTime!),
-      member: authProvider.user?["fullName"],
-      checkoutTime:
-          DateFormat("HH:mm:ss").format(checkoutDateTime),
-      totalHrs: totalTime,
-    ),
-  );
-
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title:  Text("Meeting Ended",style: getFonts(15, Colors.black)),
-      content: Text("Total Time: $totalTime",style: getFonts(14, Colors.black),),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pop(context);
-          },
-          child: const Text("OK"),
-        )
-      ],
-    ),
-  );
-},
-                          icon: const Icon(Icons.logout, color: Colors.white, size: 20),
-                          label: const Text('End Meeting', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF04438),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
+                        style: OutlinedButton.styleFrom(
+                          padding:
+                              EdgeInsets.symmetric(vertical: h(16)),
+                          side: const BorderSide(color: Color(0xFFD0D5DD)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(w(12))),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                    ),
 
-            const SizedBox(height: 24),
+                    SizedBox(width: w(12)),
 
-            // --- BOTTOM CARD: MEETING DETAILS ---
-            _CustomCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991108.png', width: 40, height: 40),
-                      const SizedBox(width: 12),
-                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${widget.meeting.meetingName}',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF101828)),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          if (isSubmitted) return;
+
+                          isSubmitted = true;
+
+                          _stopwatch.stop();
+                          _timer.cancel();
+
+                          final checkoutDateTime = DateTime.now();
+                          final difference =
+                              checkoutDateTime.difference(checkinDateTime!);
+
+                          String totalTime =
+                              "${difference.inHours}h ${difference.inMinutes % 60}m";
+
+                          final provider = Provider.of<CheckinOutProvider>(
+                              context,
+                              listen: false);
+
+                          await provider.addCheckinout(
+                            CheckinoutModal(
+                              meetingSchedule:
+                                  widget.meeting.meetingName ?? "",
+                              checkinDate: DateFormat("yyyy-MM-dd")
+                                  .format(checkinDateTime!),
+                              checkinTime: DateFormat("HH:mm:ss")
+                                  .format(checkinDateTime!),
+                              member: authProvider.user?["fullName"],
+                              checkoutTime: DateFormat("HH:mm:ss")
+                                  .format(checkoutDateTime),
+                              totalHrs: totalTime,
                             ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                _Tag(label: 'General', color: Color(0xFF4A90E2)),
-                                SizedBox(width: 8),
-                                _StatusBadge(label: 'In Progress', color: Color(0xFF027A48), bgColor: Color(0xFFECFDF3), isSmall: true),
+                          );
+
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text("Meeting Ended",
+                                  style:
+                                      getFonts(w(15), Colors.black)),
+                              content: Text("Total Time: $totalTime",
+                                  style:
+                                      getFonts(w(14), Colors.black)),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("OK",
+                                      style:
+                                          TextStyle(fontSize: w(14))),
+                                )
                               ],
                             ),
-                          ],
+                          );
+                        },
+                        icon: Icon(Icons.logout,
+                            color: Colors.white, size: w(20)),
+                        label: Text(
+                          'End Meeting',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: w(14),
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color(0xFFF04438),
+                          padding:
+                              EdgeInsets.symmetric(vertical: h(16)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(w(12))),
                         ),
                       ),
-                      _DateBadge(
-  day: DateFormat("dd").format(date),
-  month: DateFormat("MMM").format(date).toUpperCase(),
-),
-                    ],
-                  ),
-                   SizedBox(height: 24),
-                   _InfoTile(icon: Icons.calendar_month_outlined, label: 'DATE', value: '${widget.meeting.meetingDate}'),
-                   _InfoTile(icon: Icons.access_time, label: 'TIME', value: '${widget.meeting.meetingTime}'),
-                   _InfoTile(icon: Icons.location_on_outlined, label: 'LOCATION', value: '${widget.meeting.meetingLocation}'),
-                   _InfoTile(icon: Icons.people_outline, label: 'EXPECTED ATTENDEES', value: '${widget.meeting.meetingAttendees}'),
-                   _InfoTile(icon: Icons.notifications_none_outlined, label: 'REMINDER', value: '${widget.meeting.meetingStatus}'),
-                   Divider(height: 48, color: Color(0xFFEAECF0)),
-                  
-                  _SectionHeader(icon: Icons.description_outlined, title: 'AGENDA'),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFEAECF0)),
                     ),
-                    child:  Text(
-                      '${widget.meeting.meetingAgenda}',
-                      style: TextStyle(fontSize: 14, color: Color(0xFF344054), height: 1.5),
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          SizedBox(height: h(24)),
+
+          _CustomCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Image.network(
+                      'https://cdn-icons-png.flaticon.com/512/2991/2991108.png',
+                      width: w(40),
+                      height: w(40),
+                    ),
+                    SizedBox(width: w(12)),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${widget.meeting.meetingName}',
+                            style: TextStyle(
+                              fontSize: w(22),
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF101828),
+                            ),
+                          ),
+                          SizedBox(height: h(8)),
+                          Row(
+                            children: [
+                              _Tag(label: 'General', color: Color(0xFF4A90E2)),
+                              SizedBox(width: w(8)),
+                              _StatusBadge(
+                                  label: 'In Progress',
+                                  color: Color(0xFF027A48),
+                                  bgColor: Color(0xFFECFDF3),
+                                  isSmall: true),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    _DateBadge(
+                      day: DateFormat("dd").format(date),
+                      month: DateFormat("MMM")
+                          .format(date)
+                          .toUpperCase(),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: h(24)),
+
+                _InfoTile(
+                    icon: Icons.calendar_month_outlined,
+                    label: 'DATE',
+                    value: '${widget.meeting.meetingDate}'),
+                _InfoTile(
+                    icon: Icons.access_time,
+                    label: 'TIME',
+                    value: '${widget.meeting.meetingTime}'),
+                _InfoTile(
+                    icon: Icons.location_on_outlined,
+                    label: 'LOCATION',
+                    value: '${widget.meeting.meetingLocation}'),
+                _InfoTile(
+                    icon: Icons.people_outline,
+                    label: 'EXPECTED ATTENDEES',
+                    value: '${widget.meeting.meetingAttendees}'),
+                _InfoTile(
+                    icon: Icons.notifications_none_outlined,
+                    label: 'REMINDER',
+                    value: '${widget.meeting.meetingStatus}'),
+
+                Divider(height: h(48), color: Color(0xFFEAECF0)),
+
+                _SectionHeader(
+                    icon: Icons.description_outlined, title: 'AGENDA'),
+
+                SizedBox(height: h(12)),
+
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(w(16)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(w(12)),
+                    border:
+                        Border.all(color: const Color(0xFFEAECF0)),
+                  ),
+                  child: Text(
+                    '${widget.meeting.meetingAgenda}',
+                    style: TextStyle(
+                      fontSize: w(14),
+                      color: const Color(0xFF344054),
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
 }
 
@@ -508,9 +614,10 @@ class _TimerSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: size.width < 400 ? 4 : 8, vertical: 20),
-      child: const Text(':', style: TextStyle(fontSize: 32, color: Color(0xFFD0D5DD), fontWeight: FontWeight.bold)),
+      padding: EdgeInsets.symmetric(horizontal: size.width < 400 ? 4 : 8, vertical: w * 0.05),
+      child:  Text(':', style: TextStyle(fontSize: w * 0.08, color: Color(0xFFD0D5DD), fontWeight: FontWeight.bold)),
     );
   }
 }
@@ -527,25 +634,39 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+
     return Column(
       children: [
+        /// 🔹 TOP TEXT ROW
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Elapsed',
-                style: const TextStyle(
-                    color: Color(0xFF667085), fontSize: 13)),
-            Text('$elapsed of ~$total',
-                style: const TextStyle(
-                    color: Color(0xFF667085), fontSize: 13)),
+            Text(
+              'Elapsed',
+              style: TextStyle(
+                color: const Color(0xFF667085),
+                fontSize: w * 0.032, // ~13
+              ),
+            ),
+            Text(
+              '$elapsed of ~$total',
+              style: TextStyle(
+                color: const Color(0xFF667085),
+                fontSize: w * 0.032, // ~13
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 8),
+
+        SizedBox(height: w * 0.02), // ~8
+
+        /// 🔹 PROGRESS BAR
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(w * 0.02), // ~8
           child: LinearProgressIndicator(
             value: progress,
-            minHeight: 10,
+            minHeight: w * 0.025, // ~10
             backgroundColor: const Color(0xFFEAECF0),
             color: const Color(0xFF4A90E2),
           ),
@@ -558,30 +679,71 @@ class _ProgressBar extends StatelessWidget {
 class _InfoTile extends StatelessWidget {
   final IconData icon;
   final String label, value;
-  const _InfoTile({required this.icon, required this.label, required this.value});
+
+  const _InfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(
+        bottom: w * 0.03, // ~12
+      ),
       child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.all(w * 0.03), // ~12
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9FAFB),
+          borderRadius: BorderRadius.circular(w * 0.03), // ~12
+        ),
         child: Row(
           children: [
+            /// ICON BOX
             Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: const Color(0xFFF3EFFF), borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: const Color(0xFF7B61FF), size: 22),
+              padding: EdgeInsets.all(w * 0.02), // ~8
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3EFFF),
+                borderRadius: BorderRadius.circular(w * 0.025), // ~10
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF7B61FF),
+                size: w * 0.055, // ~22
+              ),
             ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF667085), fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF101828))),
-              ],
+
+            SizedBox(width: w * 0.04), // ~16
+
+            /// TEXT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: w * 0.028, // ~11
+                      color: const Color(0xFF667085),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  SizedBox(height: w * 0.01), // ~4
+
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: w * 0.038, // ~15
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF101828),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -594,19 +756,51 @@ class _StatusBadge extends StatelessWidget {
   final String label;
   final Color color, bgColor;
   final bool isSmall;
-  const _StatusBadge({required this.label, required this.color, required this.bgColor, this.isSmall = false});
+
+  const _StatusBadge({
+    required this.label,
+    required this.color,
+    required this.bgColor,
+    this.isSmall = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: isSmall ? 4 : 6),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(20)),
+      padding: EdgeInsets.symmetric(
+        horizontal: w * 0.03, // ~12
+        vertical: isSmall ? w * 0.01 : w * 0.015, // ~4 / 6
+      ),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(w * 0.05), // ~20
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(radius: 3.5, backgroundColor: color),
-          const SizedBox(width: 8),
-          Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+          /// DOT
+          Container(
+            width: w * 0.018, // replaces CircleAvatar(3.5)
+            height: w * 0.018,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
+
+          SizedBox(width: w * 0.02), // ~8
+
+          /// TEXT
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: w * 0.03, // ~12
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -616,31 +810,86 @@ class _StatusBadge extends StatelessWidget {
 class _Tag extends StatelessWidget {
   final String label;
   final Color color;
-  const _Tag({required this.label, required this.color});
+
+  const _Tag({
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.3))),
-      child: Text(label, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w500)),
+      padding: EdgeInsets.symmetric(
+        horizontal: w * 0.03,  // ~12
+        vertical: w * 0.01,    // ~4
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(w * 0.05), // ~20
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: w * 0.003, // responsive border
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: w * 0.032, // ~13
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }
 
 class _DateBadge extends StatelessWidget {
   final String day, month;
-  const _DateBadge({required this.day, required this.month});
+
+  const _DateBadge({
+    required this.day,
+    required this.month,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-      decoration: BoxDecoration(color: const Color(0xFFF3EFFF), borderRadius: BorderRadius.circular(16)),
+      padding: EdgeInsets.symmetric(
+        horizontal: w * 0.045, // ~18
+        vertical: h * 0.015,   // ~12
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3EFFF),
+        borderRadius: BorderRadius.circular(w * 0.04), // ~16
+      ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(day, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF7B61FF))),
-          Text(month, style: const TextStyle(fontSize: 10, color: Color(0xFF7B61FF), fontWeight: FontWeight.bold)),
+          /// DAY
+          Text(
+            day,
+            style: TextStyle(
+              fontSize: w * 0.06, // ~24
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF7B61FF),
+            ),
+          ),
+
+          SizedBox(height: h * 0.005),
+
+          /// MONTH
+          Text(
+            month,
+            style: TextStyle(
+              fontSize: w * 0.025, // ~10
+              color: const Color(0xFF7B61FF),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -650,15 +899,34 @@ class _DateBadge extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String title;
-  const _SectionHeader({required this.icon, required this.title});
+
+  const _SectionHeader({
+    required this.icon,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+
     return Row(
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF667085)),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 12, color: Color(0xFF667085), fontWeight: FontWeight.bold)),
+        Icon(
+          icon,
+          size: w * 0.045, // ~18
+          color: const Color(0xFF667085),
+        ),
+
+        SizedBox(width: w * 0.02), // ~8
+
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: w * 0.03, // ~12
+            color: const Color(0xFF667085),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -668,23 +936,67 @@ class _GradientButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
   final IconData icon;
-  const _GradientButton({required this.onPressed, required this.label, required this.icon});
+
+  const _GradientButton({
+    required this.onPressed,
+    required this.label,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
+
     return Container(
       width: double.infinity,
-      height: 56,
+      height: h * 0.07, // 56
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: const LinearGradient(colors: [Color(0xFF7B61FF), Color(0xFF4A90E2)]),
-        boxShadow: [BoxShadow(color: const Color(0xFF7B61FF).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
+        borderRadius: BorderRadius.circular(w * 0.035), // 14
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF7B61FF),
+            Color(0xFF4A90E2),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7B61FF).withOpacity(0.3),
+            blurRadius: w * 0.03, // 12
+            offset: Offset(0, h * 0.007), // 6
+          ),
+        ],
       ),
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, color: Colors.white),
-        label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent),
+
+        /// ICON
+        icon: Icon(
+          icon,
+          color: Colors.white,
+          size: w * 0.05, // responsive icon
+        ),
+
+        /// TEXT
+        label: Text(
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: w * 0.04, // 16
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: EdgeInsets.symmetric(
+            horizontal: w * 0.04,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(w * 0.035),
+          ),
+        ),
       ),
     );
   }
