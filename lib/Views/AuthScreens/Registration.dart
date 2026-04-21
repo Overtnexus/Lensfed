@@ -329,6 +329,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     backgroundColor: Colors.red,
                   ),
                 );
+                String displayError = "Registration Failed";
+                 if (authProvider.errorMessage == "Member ID already exists") {
+              displayError = "Already Exist Member";
+            } else if (authProvider.errorMessage != null) {
+              displayError = authProvider.errorMessage!;
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(displayError),
+                backgroundColor: Colors.red,
+              ),
+            );
               }
             }
           },

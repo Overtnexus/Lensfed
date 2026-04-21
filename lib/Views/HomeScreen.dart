@@ -12,6 +12,7 @@ import 'package:lensfed/Views/Screens/Meetings.dart';
 import 'package:lensfed/Views/Screens/notificationScreen.dart';
 import 'package:lensfed/Views/Screens/profile.dart';
 import 'package:lensfed/components/clipperAdds.dart';
+import 'package:lensfed/components/defaultposter.dart';
 import 'package:lensfed/utilities/colors.dart';
 
 import 'package:lensfed/utilities/fonts.dart';
@@ -345,91 +346,65 @@ bottomNavigationBar: Container(
     );
   }
 
-Widget adsPosterSlider() {
+  Widget adsPosterSlider() {
   return Consumer<AdsProvider>(
     builder: (context, adsProvider, child) {
-      final mq = MediaQuery.of(context);
-      final height = mq.size.height;
-      final width = mq.size.width;
+      final height = MediaQuery.of(context).size.height;
+      final width = MediaQuery.of(context).size.width;
 
-      // 🔥 Responsive scale factors
-      final padding = width * 0.035;
-      final smallGap = width * 0.015;
-      final iconSize = width * 0.04;
-      final fontSize = width * 0.032;
-
-      /// 1️⃣ FILTER: Active Ads Only
+      // 1. FILTER: Active Ads Only logic
       final now = DateTime.now();
       final activeAds = adsProvider.ads.where((ad) {
         if (ad.startDate == null || ad.endDate == null) return true;
-        return now.isAfter(ad.startDate!) &&
-            now.isBefore(ad.endDate!.add(const Duration(days: 1)));
+        return now.isAfter(ad.startDate!) && now.isBefore(ad.endDate!.add(const Duration(days: 1)));
       }).toList();
 
-      /// LOADING
       if (adsProvider.isLoading) {
-        return SizedBox(
-          height: height * 0.3,
-          child: const Center(child: CircularProgressIndicator()),
+        return SizedBox(height: height * 0.28, child: const Center(child: CircularProgressIndicator()));
+      }
+
+      // 2. CONDITION: If empty, show the "Default Beautiful Poster"
+      if (activeAds.isEmpty) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: 10),
+          child: Column(
+            children: [
+              Row(
+              children: [
+                const Icon(Icons.auto_awesome, color: Color(0xFFFBBF24), size: 18),
+                const SizedBox(width: 8),
+                Text("LATEST ONES", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey[600])),
+              ],
+              
+            ),
+            SizedBox(height: width*0.01,),
+              const DefaultAppPoster(),
+            ],
+          ), // The beautiful placeholder
         );
       }
 
-      /// EMPTY
-      if (activeAds.isEmpty) return const SizedBox.shrink();
-
+      // 3. IF DATA EXISTS: Show the real slider
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔹 HEADER
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: padding,
-              vertical: smallGap,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: 10),
             child: Row(
               children: [
-                Icon(
-                  Icons.campaign,
-                  color: const Color(0xFF7C3AED),
-                  size: iconSize,
-                ),
-                SizedBox(width: smallGap),
-                Text(
-                  "SPECIAL NOTICES",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: fontSize,
-                    color: Colors.grey,
-                  ),
-                ),
+                const Icon(Icons.auto_awesome, color: Color(0xFFFBBF24), size: 18),
+                const SizedBox(width: 8),
+                Text("LATEST UPDATES", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey[600])),
               ],
             ),
           ),
-
-          /// 🔹 SLIDER
           SizedBox(
-            height: height * 0.3,
+            height: height * 0.28,
             child: PageView.builder(
-              controller: PageController(
-                viewportFraction: width < 600 ? 0.92 : 0.7, // 🔥 responsive
-              ),
+              controller: PageController(viewportFraction: 0.9),
               itemCount: activeAds.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: width * 0.01),
-                  child: GestureDetector(
-                    onTap: () async {
-                      final link = activeAds[index].attachmentLink;
-                      if (link != null) {
-                        await launchUrl(
-                          Uri.parse(link),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      }
-                    },
-                    child: ModernAdPoster(ad: activeAds[index]),
-                  ),
-                );
+                return ModernAdPoster(ad: activeAds[index]);
               },
             ),
           ),
@@ -438,6 +413,100 @@ Widget adsPosterSlider() {
     },
   );
 }
+
+// Widget adsPosterSlider() {
+//   return Consumer<AdsProvider>(
+//     builder: (context, adsProvider, child) {
+//       final mq = MediaQuery.of(context);
+//       final height = mq.size.height;
+//       final width = mq.size.width;
+
+//       // 🔥 Responsive scale factors
+//       final padding = width * 0.035;
+//       final smallGap = width * 0.015;
+//       final iconSize = width * 0.04;
+//       final fontSize = width * 0.032;
+
+//       /// 1️⃣ FILTER: Active Ads Only
+//       final now = DateTime.now();
+//       final activeAds = adsProvider.ads.where((ad) {
+//         if (ad.startDate == null || ad.endDate == null) return true;
+//         return now.isAfter(ad.startDate!) &&
+//             now.isBefore(ad.endDate!.add(const Duration(days: 1)));
+//       }).toList();
+
+//       /// LOADING
+//       if (adsProvider.isLoading) {
+//         return SizedBox(
+//           height: height * 0.3,
+//           child: const Center(child: CircularProgressIndicator()),
+//         );
+//       }
+
+//       /// EMPTY
+//       if (activeAds.isEmpty) return const SizedBox.shrink();
+
+//       return Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           /// 🔹 HEADER
+//           Padding(
+//             padding: EdgeInsets.symmetric(
+//               horizontal: padding,
+//               vertical: smallGap,
+//             ),
+//             child: Row(
+//               children: [
+//                 Icon(
+//                   Icons.campaign,
+//                   color: const Color(0xFF7C3AED),
+//                   size: iconSize,
+//                 ),
+//                 SizedBox(width: smallGap),
+//                 Text(
+//                   "SPECIAL NOTICES",
+//                   style: TextStyle(
+//                     fontWeight: FontWeight.bold,
+//                     fontSize: fontSize,
+//                     color: Colors.grey,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           /// 🔹 SLIDER
+//           SizedBox(
+//             height: height * 0.3,
+//             child: PageView.builder(
+//               controller: PageController(
+//                 viewportFraction: width < 600 ? 0.92 : 0.7, // 🔥 responsive
+//               ),
+//               itemCount: activeAds.length,
+//               itemBuilder: (context, index) {
+//                 return Padding(
+//                   padding: EdgeInsets.symmetric(horizontal: width * 0.01),
+//                   child: GestureDetector(
+//                     onTap: () async {
+//                       final link = activeAds[index].attachmentLink;
+//                       if (link != null) {
+//                         await launchUrl(
+//                           Uri.parse(link),
+//                           mode: LaunchMode.externalApplication,
+//                         );
+//                       }
+//                     },
+//                     child: ModernAdPoster(ad: activeAds[index]),
+//                   ),
+//                 );
+//               },
+//             ),
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
 
   
 Widget beautifulImageSlider(BuildContext context) {

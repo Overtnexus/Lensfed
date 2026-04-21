@@ -151,10 +151,10 @@ bool isActive(String? dateStr) {
                       style: splash2Fonts(fontSize3), 
                     ),
                     SizedBox(width: 7),
-                    Icon(
-                      Icons.cloud_off_outlined,
-                      color: Colors.white,
-                    ),
+                    // Icon(
+                    //   Icons.cloud_off_outlined,
+                    //   color: Colors.white,
+                    // ),
                   ],
                 ),
               ),
