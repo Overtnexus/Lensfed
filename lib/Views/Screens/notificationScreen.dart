@@ -70,7 +70,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       body: Column(
         children: [
-          // Filter Section
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -160,7 +159,6 @@ class NotificationDetailsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FC),
 
-      /// 🔹 APPBAR
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -173,30 +171,27 @@ class NotificationDetailsScreen extends StatelessWidget {
           'Back to Notifications',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: w * 0.04, // 16
+            fontSize: w * 0.04, 
           ),
         ),
       ),
-
-      /// 🔹 BODY
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(w * 0.05), // 20
+        padding: EdgeInsets.all(w * 0.05), 
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(w * 0.04), // 16
+            borderRadius: BorderRadius.circular(w * 0.04), 
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
-                blurRadius: w * 0.05, // 20
-                offset: Offset(0, h * 0.01), // 10
+                blurRadius: w * 0.05,
+                offset: Offset(0, h * 0.01), 
               )
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// 🔹 TOP GRADIENT STRIP
               Container(
                 height: h * 0.006, // 5
                 decoration: BoxDecoration(
@@ -209,22 +204,20 @@ class NotificationDetailsScreen extends StatelessWidget {
                 ),
               ),
 
-              /// 🔹 CONTENT
               Padding(
-                padding: EdgeInsets.all(w * 0.06), // 24
+                padding: EdgeInsets.all(w * 0.06), 
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// HEADER
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
                           Icons.description_outlined,
                           color: Colors.brown,
-                          size: w * 0.075, // 30
+                          size: w * 0.075, 
                         ),
-                        SizedBox(width: w * 0.03), // 12
+                        SizedBox(width: w * 0.03), 
 
                         Expanded(
                           child: Column(
@@ -233,12 +226,12 @@ class NotificationDetailsScreen extends StatelessWidget {
                               Text(
                                 title,
                                 style: TextStyle(
-                                  fontSize: w * 0.055, // 22
+                                  fontSize: w * 0.055,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
                               ),
-                              SizedBox(height: h * 0.01), // 8
+                              SizedBox(height: h * 0.01), 
 
                               _StatusTag(
                                 label: 'Notification',
@@ -252,9 +245,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                       ],
                     ),
 
-                    SizedBox(height: h * 0.04), // 32
-
-                    /// INFO
+                    SizedBox(height: h * 0.04),
                     _InfoTile(
                       icon: Icons.calendar_today_outlined,
                       label: 'DATE',
@@ -278,24 +269,23 @@ class NotificationDetailsScreen extends StatelessWidget {
                     SizedBox(height: h * 0.02),
 
                     Divider(
-                      height: h * 0.05, // 48
+                      height: h * 0.05,
                       thickness: 1,
                       color: const Color(0xFFF2F4F7),
                     ),
 
-                    /// MESSAGE TITLE
                     Row(
                       children: [
                         Icon(
                           Icons.info_outline,
-                          size: w * 0.045, // 18
+                          size: w * 0.045, 
                           color: Colors.grey,
                         ),
-                        SizedBox(width: w * 0.02), // 8
+                        SizedBox(width: w * 0.02),
                         Text(
                           'MESSAGE CONTENT',
                           style: TextStyle(
-                            fontSize: w * 0.03, // 12
+                            fontSize: w * 0.03, 
                             color: Colors.grey,
                             fontWeight: FontWeight.bold,
                           ),
@@ -303,15 +293,13 @@ class NotificationDetailsScreen extends StatelessWidget {
                       ],
                     ),
 
-                    SizedBox(height: h * 0.02), // 16
-
-                    /// MESSAGE BOX
+                    SizedBox(height: h * 0.02),
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.all(w * 0.04), // 16
+                      padding: EdgeInsets.all(w * 0.04), 
                       decoration: BoxDecoration(
                         color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(w * 0.03), // 12
+                        borderRadius: BorderRadius.circular(w * 0.03), 
                         border: Border.all(
                           color: const Color(0xFFEAECF0),
                         ),
@@ -319,26 +307,24 @@ class NotificationDetailsScreen extends StatelessWidget {
                       child: Text(
                         message,
                         style: TextStyle(
-                          fontSize: w * 0.038, // 15
+                          fontSize: w * 0.038, 
                           color: const Color(0xFF344054),
                           height: 1.6,
                         ),
                       ),
                     ),
 
-                    SizedBox(height: h * 0.04), // 32
-
-                    /// 🔹 BUTTON
+                    SizedBox(height: h * 0.04),
                     SizedBox(
                       width: double.infinity,
-                      height: h * 0.07, // 56
+                      height: h * 0.07, 
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF3EFFF),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.circular(w * 0.03), // 12
+                                BorderRadius.circular(w * 0.03), 
                           ),
                         ),
                         onPressed: () => Navigator.pop(context),
@@ -347,7 +333,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                           style: TextStyle(
                             color: const Color(0xFF7B61FF),
                             fontWeight: FontWeight.bold,
-                            fontSize: w * 0.04, // 16
+                            fontSize: w * 0.04, 
                           ),
                         ),
                       ),
@@ -362,8 +348,6 @@ class NotificationDetailsScreen extends StatelessWidget {
     );
   }
 }
-
-// --- SUPPORTING WIDGETS ---
 class _NotificationCard extends StatelessWidget {
   final String title, message, date;
   final VoidCallback onTap;
@@ -384,27 +368,26 @@ class _NotificationCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: EdgeInsets.only(
-          bottom: h * 0.02, // 16
+          bottom: h * 0.02, 
         ),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(w * 0.04), // 16
+          borderRadius: BorderRadius.circular(w * 0.04), 
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
-              blurRadius: w * 0.025, // 10
-              offset: Offset(0, h * 0.005), // 4
+              blurRadius: w * 0.025, 
+              offset: Offset(0, h * 0.005), 
             )
           ],
         ),
         child: Column(
           children: [
-            /// 🔹 TOP STRIP
             Container(
-              height: h * 0.005, // 4
+              height: h * 0.005, 
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(w * 0.04), // 16
+                  top: Radius.circular(w * 0.04),
                 ),
                 gradient: const LinearGradient(
                   colors: [
@@ -414,13 +397,10 @@ class _NotificationCard extends StatelessWidget {
                 ),
               ),
             ),
-
-            /// 🔹 CONTENT
             Padding(
-              padding: EdgeInsets.all(w * 0.04), // 16
+              padding: EdgeInsets.all(w * 0.04),
               child: Row(
                 children: [
-                  /// ICON BOX
                   Container(
                     padding: EdgeInsets.all(w * 0.025), // 10
                     decoration: BoxDecoration(

@@ -1,9 +1,13 @@
 
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:lensfed/Modals/notification_modal.dart';
 import 'package:lensfed/Services/api_services.dart';
+import 'package:lensfed/constance/api_constance.dart';
 
 
 class NotificationProvider with ChangeNotifier {
@@ -81,4 +85,49 @@ void openNotification(RemoteMessage message) {
 
   // Navigate to notification screen if needed
 }
+
+//  Future<void> saveDeviceTokenMAin(String token) async {
+//     try {
+//       final response = await http.post(
+//         Uri.parse(
+//           ApiConstants.baseUrl + ApiConstants.TokenNotification,
+//         ),
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: jsonEncode({
+//           "token": token,
+//         }),
+//       );
+
+//       debugPrint(response.body);
+//     } catch (e) {
+//       debugPrint(e.toString());
+//     }
+//   }
+    Future<void> saveDeviceTokenMAin({
+    required String memberId,
+    required String token,
+  }) async {
+    try {
+      debugPrint("Saving token for memberId: $memberId");
+
+      final response = await http.post(
+        Uri.parse(
+          ApiConstants.baseUrl + ApiConstants.TokenNotification,
+        ),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "memberId": memberId,
+          "token": token,
+        }),
+      );
+
+      debugPrint(response.body);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
 }

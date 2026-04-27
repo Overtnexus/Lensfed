@@ -338,55 +338,37 @@ Widget build(BuildContext context) {
 
                       SizedBox(height: height * 0.02),
                       GestureDetector(
-                       onTap: authProvider.isLoading
+                      onTap: authProvider.isLoading
     ? null
     : () async {
         if (_formKey.currentState!.validate()) {
-
-          final membershipProvider =
-              Provider.of<MembershipreniewProvider>(context, listen: false);
-
+          final membershipProvider = Provider.of<MembershipreniewProvider>(context, listen: false);
+          
+          // Using the correct controller for Member ID
           final memberId = _emailController.text.trim();
+          final password = _passwordController.text.trim();
 
           try {
-            /// 🔥 STEP 1: CHECK MEMBERSHIP FIRST
-            final isExpired =
-                await membershipProvider.checkMembershipExpired(memberId);
+            /// 1. PRE-CHECK: Verify if the account is expired before attempting login
+            /// This prevents the "Invalid credentials" error if the account is locked/expired
+            final isExpired = await membershipProvider.checkMembershipExpired(memberId);
 
             if (isExpired) {
-              /// ❌ STOP LOGIN
-              showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: const Text("Membership Expired"),
-                  content: const Text("Please renew your membership to continue."),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("OK"),
-                    )
-                  ],
-                ),
-              );
-              return;
+              // Show the beautiful dialog and STOP the process
+              showPremiumExpiredDialog("Your LENSFED membership has expired on the system. Please renew your subscription to continue using the dashboard.");
+              return; 
             }
 
-            /// ✅ STEP 2: CONTINUE LOGIN
-            bool success = await authProvider.login(
-              memberId,
-              _passwordController.text.trim(),
-            );
+            /// 2. PROCEED TO LOGIN
+            bool success = await authProvider.login(memberId, password);
 
             if (!context.mounted) return;
 
             if (success) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    "Verify User",
-                    style: getFonts(height * 0.015, Colors.white),
-                  ),
-                  backgroundColor: AppColors.accentForegroundLight,
+                  content: const Text("Authentication Successful. Verifying..."),
+                  backgroundColor: const Color(0xFF10B981), // Emerald
                 ),
               );
 
@@ -395,28 +377,23 @@ Widget build(BuildContext context) {
                 MaterialPageRoute(
                   builder: (_) => OtpVerificationScreen(
                     memberId: memberId,
-                    email: _MemberidController.text,
+                    email: _MemberidController.text.trim(), // Assuming this is the Email field
                   ),
                 ),
               );
             } else {
+              // Only show this if the credentials are actually wrong
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("Invalid Member ID or Password"),
-                  backgroundColor: Colors.red,
+                  backgroundColor: Colors.redAccent,
                 ),
               );
             }
 
           } catch (e) {
-            /// ❌ ERROR HANDLING
-            showDialog(
-              context: context,
-              builder: (_) => const AlertDialog(
-                title: Text("Error"),
-                content: Text("Unable to verify membership. Try again."),
-              ),
-            );
+            // Handle network or unexpected errors
+            showPremiumExpiredDialog("Unable to verify membership. Please check your internet connection and try again.");
           }
         }
       },
@@ -483,6 +460,111 @@ Widget build(BuildContext context) {
             ),
           ),
         ),
+      ),
+    ),
+  );
+}
+void showPremiumExpiredDialog(String message) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            width: 400,
+            padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "MEMBERSHIP EXPIRED",
+                  style: TextStyle(
+                    fontSize: 20, 
+                    fontWeight: FontWeight.bold, 
+                    color: Color(0xFF1E1B4B), // Dark Navy
+                    letterSpacing: 0.8
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
+                ),
+                const SizedBox(height: 32),
+                
+                // RENEW BUTTON (Emerald Gradient)
+                Container(
+                  width: double.infinity,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      )
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Text(
+                      "PROCEED TO RENEWAL", 
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Maybe Later", style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                )
+              ],
+            ),
+          ),
+          
+          // FLOATING ICON CIRCLE (LENSFED Violet)
+          Positioned(
+            top: -40,
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7C3AED), 
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 6),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFF7C3AED).withOpacity(0.3), blurRadius: 15)
+                ],
+              ),
+              child: const Icon(Icons. hourglass_disabled_rounded, color: Colors.white, size: 40),
+            ),
+          ),
+        ],
       ),
     ),
   );

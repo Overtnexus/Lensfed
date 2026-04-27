@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = "http://192.168.1.52:5000";
+  static const String baseUrl = "http://192.168.1.43:5000";
 
   static const String addUnit = "/api/units/add-unit";
   static const String getUnits = "/api/units";
@@ -44,6 +44,7 @@ class ApiConstants {
   static const String getNotificationRolewise = "/api/notifications/user/:role";
   static const String updateNotification = "/api/notifications/update/";   // + id
   static const String deleteNotification = "/api/notifications/delete/"; 
+  static const String TokenNotification = "/api/save-device-token";
 
   static const String loginadmin = "/api/admin/login"; 
   static const String getnadmin = "/api/admins"; 

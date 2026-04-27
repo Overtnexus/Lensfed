@@ -14,44 +14,83 @@ import 'package:lensfed/Provider/notication_provider.dart';
 
 import 'package:lensfed/Views/Splash.dart';
 
-/// ✅ BACKGROUND HANDLER
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+/// =====================================================
+/// BACKGROUND NOTIFICATION HANDLER
+/// =====================================================
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(
+  RemoteMessage message,
+) async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  debugPrint("🔔 Background Notification: ${message.notification?.title}");
+  debugPrint("BACKGROUND MESSAGE RECEIVED");
+
+  final title =
+      message.notification?.title ??
+      message.data["title"] ??
+      "";
+
+  final body =
+      message.notification?.body ??
+      message.data["body"] ??
+      "";
+
+  final date =
+      message.data["sendDateTime"] ??
+      DateTime.now().toString();
+
+  debugPrint("TITLE => $title");
+  debugPrint("BODY => $body");
+
+  await LocalNotificationService.saveNotification(
+    title: title,
+    body: body,
+    date: date,
+  );
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  /// ✅ FIREBASE INIT
   await Firebase.initializeApp();
-
-  /// ✅ LOCAL NOTIFICATION INIT
   await LocalNotificationService.initialize();
-
-  /// ✅ BACKGROUND NOTIFICATION
   FirebaseMessaging.onBackgroundMessage(
-    _firebaseMessagingBackgroundHandler,
+    firebaseMessagingBackgroundHandler,
   );
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => MemberProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => MeetingProvider()),
-        ChangeNotifierProvider(create: (_) => CheckinOutProvider()),
-        ChangeNotifierProvider(create: (_) => NotificationProvider()),
-        ChangeNotifierProvider(create: (_) => MembershipreniewProvider()),
-         ChangeNotifierProvider(create: (_) => AdsProvider()),
+        ChangeNotifierProvider(
+          create: (_) => MemberProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => MeetingProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CheckinOutProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => MembershipreniewProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdsProvider(),
+        ),
       ],
       child: const MyApp(),
     ),
   );
 }
 
-/// ✅ MAIN APP
+/// =====================================================
+/// MAIN APP
+/// =====================================================
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -60,58 +99,119 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  final FirebaseMessaging _messaging =
+      FirebaseMessaging.instance;
 
   @override
   void initState() {
     super.initState();
 
-    /// Delay to ensure context is ready
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initFCM();
-    });
+    /// ONLY KEEP FCM LISTENERS HERE
+    /// DO NOT request permission here
+    /// Permission popup should show in HomeScreen
+    setupFCMListeners();
   }
 
-  /// ✅ FCM SETUP
-  Future<void> _initFCM() async {
-    /// Request permission (Android 13+ / iOS)
-    await _messaging.requestPermission(
+  /// =====================================================
+  /// FCM LISTENERS ONLY
+  /// =====================================================
+  Future<void> setupFCMListeners() async {
+    /// iOS foreground notification support
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    /// Get token
-    String? token = await _messaging.getToken();
-    debugPrint("📱 FCM TOKEN: $token");
+    /// FOREGROUND MESSAGE
+    FirebaseMessaging.onMessage.listen(
+      (RemoteMessage message) async {
+        final title =
+            message.notification?.title ??
+            message.data["title"] ??
+            "";
 
-    /// Save token
-    if (token != null) {
-      context.read<NotificationProvider>().saveDeviceToken(token);
-    }
+        final body =
+            message.notification?.body ??
+            message.data["body"] ??
+            "";
 
-    /// 🔔 FOREGROUND MESSAGE
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint("🔔 Foreground Notification: ${message.notification?.title}");
+        final date =
+            message.data["sendDateTime"] ??
+            DateTime.now().toString();
 
-      /// ✅ SHOW IN MOBILE NOTIFICATION BAR
-      if (message.notification != null) {
-        LocalNotificationService.showNotification(
-          title: message.notification!.title ?? "Notification",
-          body: message.notification!.body ?? "",
+        debugPrint("FOREGROUND MESSAGE RECEIVED");
+
+        /// SHOW POPUP
+        await LocalNotificationService.showNotification(
+          title: title,
+          body: body,
         );
-      }
 
-      /// ALSO UPDATE INSIDE APP
-      context.read<NotificationProvider>().addNotificationFromPush(message);
-    });
+        /// SAVE LOCALLY
+        await LocalNotificationService.saveNotification(
+          title: title,
+          body: body,
+          date: date,
+        );
+      },
+    );
 
-    /// 📲 WHEN USER CLICK NOTIFICATION
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint("👉 Notification Clicked");
+    /// APP OPENED FROM BACKGROUND
+    FirebaseMessaging.onMessageOpenedApp.listen(
+      (RemoteMessage message) async {
+        final title =
+            message.notification?.title ??
+            message.data["title"] ??
+            "";
 
-      context.read<NotificationProvider>().openNotification(message);
-    });
+        final body =
+            message.notification?.body ??
+            message.data["body"] ??
+            "";
+
+        final date =
+            message.data["sendDateTime"] ??
+            DateTime.now().toString();
+
+        debugPrint("APP OPENED FROM BACKGROUND");
+
+        await LocalNotificationService.saveNotification(
+          title: title,
+          body: body,
+          date: date,
+        );
+      },
+    );
+
+    /// APP OPENED FROM TERMINATED STATE
+    RemoteMessage? initialMessage =
+        await _messaging.getInitialMessage();
+
+    if (initialMessage != null) {
+      final title =
+          initialMessage.notification?.title ??
+          initialMessage.data["title"] ??
+          "";
+
+      final body =
+          initialMessage.notification?.body ??
+          initialMessage.data["body"] ??
+          "";
+
+      final date =
+          initialMessage.data["sendDateTime"] ??
+          DateTime.now().toString();
+
+      debugPrint("APP OPENED FROM TERMINATED STATE");
+
+      await LocalNotificationService.saveNotification(
+        title: title,
+        body: body,
+        date: date,
+      );
+    }
   }
 
   @override

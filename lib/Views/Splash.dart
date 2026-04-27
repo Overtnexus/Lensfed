@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:lensfed/Provider/AuthProvider.dart';
@@ -18,151 +19,303 @@ class LesnsfedSplash extends StatefulWidget {
 }
 
 class _LesnsfedSplashState extends State<LesnsfedSplash> {
-  Future<void> requestNotificationPermission() async {
+  bool isOffline = false;
 
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  @override
+  void initState() {
+    super.initState();
+    checkLogin();
+  }
 
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+  Future<void> checkLogin() async {
+    setState(() => isOffline = false);
 
-  print("Notification Permission: ${settings.authorizationStatus}");
+    try {
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 5));
 
-}
-
-Future<void> getToken() async {
-
-  String? token = await FirebaseMessaging.instance.getToken();
-
-  print("FCM Token: $token");
-
-}
-
-
-
- @override
-void initState() {
-  super.initState();
-
-  requestNotificationPermission();
-  getToken();
-
-  checkLogin();
-}
-Future<void> checkLogin() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
-  
-  Widget nextScreen = const LoginScreen();
-
-  if (isLoggedIn) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final renewProvider = Provider.of<MembershipreniewProvider>(context, listen: false);
-
-    // 1. Load user info
-    await authProvider.loadUserFromPrefs();
-    
-    // 2. Fetch renewal data for this specific member
-    await renewProvider.fetchMembersshipreniew(authProvider.membershipId);
-
-    // 3. Determine if active
-    bool isStillActive = false;
-    if (renewProvider.membershipreniew.isNotEmpty) {
-      // Find the latest renewal date or check the list
-      final latest = renewProvider.membershipreniew.first;
-      isStillActive = isActive(latest.renewalDate);
+      if (result.isEmpty || result[0].rawAddress.isEmpty) {
+        throw Exception();
+      }
+    } catch (_) {
+      setState(() => isOffline = true);
+      return;
     }
 
-    if (isStillActive) {
-      nextScreen = HomeScreen();
-    } else {
-      nextScreen = const AccountRenewalScreen(); 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool("isLoggedIn") ?? false;
+
+    Widget nextScreen = const LoginScreen();
+
+    if (isLoggedIn) {
+      final authProvider =
+          Provider.of<AuthProvider>(context, listen: false);
+
+      final renewProvider =
+          Provider.of<MembershipreniewProvider>(context, listen: false);
+
+      await authProvider.loadUserFromPrefs();
+
+      await renewProvider
+          .fetchMembersshipreniew(authProvider.membershipId);
+
+      bool isStillActive = false;
+
+      if (renewProvider.membershipreniew.isNotEmpty) {
+        final latest = renewProvider.membershipreniew.first;
+        isStillActive = isActive(latest.renewalDate);
+      }
+
+      nextScreen =
+          isStillActive ? HomeScreen() : const AccountRenewalScreen();
+    }
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
+    );
+  }
+
+  bool isActive(String? dateStr) {
+    if (dateStr == null || dateStr == "null") return false;
+
+    try {
+      DateTime expiry = DateTime.parse(dateStr);
+      return expiry.isAfter(DateTime.now());
+    } catch (e) {
+      return false;
     }
   }
 
-  await Future.delayed(const Duration(seconds: 2));
-
-  if (!mounted) return;
-  Navigator.pushReplacement(
-    context, 
-    MaterialPageRoute(builder: (_) => nextScreen)
-  );
-}
-
-bool isActive(String? dateStr) {
-  if (dateStr == null || dateStr == "null") return false;
-  try {
-    DateTime expiry = DateTime.parse(dateStr);
-    return expiry.isAfter(DateTime.now());
-  } catch (e) {
-    return false;
-  }
-}
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    double fontSize1 = screenWidth * 0.07;
-    double fontSize2 = screenWidth * 0.06;
-    double fontSize3 = screenWidth * 0.03;
+    final mq = MediaQuery.of(context);
+
+    final width = mq.size.width;
+    final height = mq.size.height;
+
+    final isDesktop = width > 1100;
+    final isTablet = width > 700 && width <= 1100;
+
+    // Responsive Sizes
+    final logoSize = isDesktop
+        ? height * 0.14
+        : isTablet
+            ? height * 0.13
+            : height * 0.12;
+
+    final splashTitleSize = isDesktop
+        ? width * 0.03
+        : isTablet
+            ? width * 0.05
+            : width * 0.08;
+
+    final offlineTitleSize = isDesktop
+        ? width * 0.025
+        : isTablet
+            ? width * 0.04
+            : width * 0.06;
+
+    final subtitleSize = isDesktop
+        ? width * 0.014
+        : isTablet
+            ? width * 0.022
+            : width * 0.035;
+
+    final buttonWidth = isDesktop
+        ? 220.0
+        : isTablet
+            ? 200.0
+            : 180.0;
+
+    final buttonHeight = isDesktop
+        ? 55.0
+        : isTablet
+            ? 52.0
+            : 50.0;
+
+    final iconSize = isDesktop
+        ? 100.0
+        : isTablet
+            ? 90.0
+            : 80.0;
+
     return Scaffold(
-       body: Container(
+      body: Container(
+        width: double.infinity,
         decoration: BoxDecoration(
-          gradient:AppColors.gradientPrimary
+          gradient: AppColors.gradientPrimary,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: screenHeight * 0.2),
-            Container(
-              height: screenHeight * 0.13,
-              width: screenHeight * 0.13,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(screenHeight*0.06),
-                color: Colors.white
-              ),
-              child: Image.asset(
-                "assets/lensfed.logo-removebg.png",
-                height: screenHeight * 0.25, 
-              ),
-            ),
-            Center(
-              child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "LENSFED",
-                    style: splashFonts(fontSize1), 
-                  ),
-                  SizedBox(width: 3),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "",
-                      style: splash2Fonts(fontSize3), 
-                    ),
-                    SizedBox(width: 7),
-                    // Icon(
-                    //   Icons.cloud_off_outlined,
-                    //   color: Colors.white,
-                    // ),
-                  ],
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          child: isOffline
+              ? _buildOfflineUI(
+                  height,
+                  width,
+                  offlineTitleSize,
+                  subtitleSize,
+                  buttonWidth,
+                  buttonHeight,
+                  iconSize,
+                )
+              : _buildSplashUI(
+                  height,
+                  width,
+                  logoSize,
+                  splashTitleSize,
                 ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.03),
-          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildOfflineUI(
+    double h,
+    double w,
+    double titleSize,
+    double subtitleSize,
+    double buttonWidth,
+    double buttonHeight,
+    double iconSize,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: EdgeInsets.all(w * 0.05),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: w * 0.004,
+            ),
+          ),
+          child: Icon(
+            Icons.wifi_off_rounded,
+            color: Colors.white,
+            size: iconSize,
+          ),
+        ),
+
+        SizedBox(height: h * 0.04),
+
+        Text(
+          "No Internet Connection",
+          style: splashFonts(titleSize).copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        SizedBox(height: h * 0.015),
+
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: w * 0.1,
+          ),
+          child: Text(
+            "Please check your network settings and try again to access LENSFED.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: subtitleSize,
+              height: 1.5,
+            ),
+          ),
+        ),
+
+        SizedBox(height: h * 0.05),
+
+        SizedBox(
+          width: buttonWidth,
+          height: buttonHeight,
+          child: ElevatedButton.icon(
+            onPressed: checkLogin,
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: Colors.white,
+              size: w * 0.05,
+            ),
+            label: Text(
+              "RETRY",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: subtitleSize,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  w * 0.06,
+                ),
+              ),
+              elevation: 5,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSplashUI(
+    double h,
+    double w,
+    double logoSize,
+    double titleSize,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(height: h * 0.1),
+
+        Container(
+          height: logoSize,
+          width: logoSize,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              logoSize / 2,
+            ),
+            color: Colors.white,
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 20,
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(w * 0.03),
+            child: Image.asset(
+              "assets/lensfed.logo-removebg.png",
+            ),
+          ),
+        ),
+
+        SizedBox(height: h * 0.025),
+
+        Text(
+          "LENSFED",
+          style: splashFonts(titleSize),
+        ),
+
+        SizedBox(height: h * 0.05),
+
+        SizedBox(
+          height: h * 0.04,
+          width: h * 0.04,
+          child: const CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2,
+          ),
+        ),
+      ],
     );
   }
 }

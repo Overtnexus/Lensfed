@@ -47,12 +47,16 @@ class _HomeScreenState extends State<HomeScreen>
     late PageController _pageController;
   int _currentPage = 0;
 bool isUserTouching = false;
+  bool notificationInitialized = false;
+
 
 @override
 void initState() {
   super.initState();
  _pageController = PageController(viewportFraction: 0.9);
-
+ WidgetsBinding.instance.addPostFrameCallback((_) {
+      initNotificationPermission();
+    });
   startAutoScroll();
     Future.microtask(() {
     Provider.of<AdsProvider>(context, listen: false).fetchAds();
@@ -75,28 +79,74 @@ void initState() {
      Future.microtask(() {
     context.read<NotificationProvider>().fetchNotification();
   });
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
 
-  context.read<NotificationProvider>().fetchNotification();
-  
-
-});
-
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-
-  print("Foreground notification received");
-
-  if (message.notification != null) {
-
-    print(message.notification!.title);
-    print(message.notification!.body);
-
-  }
-
-});
 
   });
 }
+
+Future<void> initNotificationPermission() async {
+    if (notificationInitialized) return;
+
+    notificationInitialized = true;
+
+    final messaging =
+        FirebaseMessaging.instance;
+
+    /// ASK PERMISSION HERE
+    NotificationSettings settings =
+        await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false,
+    );
+
+    debugPrint(
+      "Permission Status: ${settings.authorizationStatus}",
+    );
+
+    if (settings.authorizationStatus ==
+            AuthorizationStatus.authorized ||
+        settings.authorizationStatus ==
+            AuthorizationStatus.provisional) {
+      final authProvider =
+          Provider.of<AuthProvider>(
+        context,
+        listen: false,
+      );
+
+      final memberId =
+          authProvider.membershipId ?? "";
+
+      String? token =
+          await messaging.getToken();
+
+      debugPrint("MEMBER ID => $memberId");
+      debugPrint("FCM TOKEN => $token");
+
+      if (token != null &&
+          memberId.isNotEmpty) {
+        await context
+            .read<NotificationProvider>()
+            .saveDeviceTokenMAin(
+              memberId: memberId,
+              token: token,
+            );
+      }
+
+      /// TOKEN REFRESH
+      FirebaseMessaging.instance.onTokenRefresh
+          .listen((newToken) async {
+        await context
+            .read<NotificationProvider>()
+            .saveDeviceTokenMAin(
+              memberId: memberId,
+              token: newToken,
+            );
+      });
+    }
+  }
+
 void startAutoScroll() {
   Future.delayed(const Duration(seconds: 3), () {
 
